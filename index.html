@@ -1323,16 +1323,41 @@ function filterMR(q,sec){
 }
 
 // Cascade: Statement changed
-// ── DEBOUNCE: only persist to Supabase after user stops changing for 600ms ──
+// ── DEBOUNCE + SESSION DEDUP ─────────────────────────────────────────────────
+// _sessionSaved tracks the classification saved per account THIS page load.
+// If the user corrects the same account again, we roll back the previous
+// history entry before recording the new one — so rapid changes within a
+// session count as exactly ONE correction, not many.
 var _saveDebounceTimers={};
+var _sessionSaved={};  // key → {statement,section,lineItem} last saved this session
+
 function debouncedPersist(accountName,stmt,sec,li){
   var key=normName(accountName);
   if(_saveDebounceTimers[key])clearTimeout(_saveDebounceTimers[key]);
   _saveDebounceTimers[key]=setTimeout(function(){
     delete _saveDebounceTimers[key];
+    // Roll back previous session save for this account if it exists
+    if(_sessionSaved[key]){
+      var prev=_sessionSaved[key];
+      var prevHk=prev.statement+'|'+prev.section+'|'+prev.lineItem;
+      var rule=APP.rulesCache[key];
+      if(rule&&rule.history){
+        for(var i=0;i<rule.history.length;i++){
+          var hk=rule.history[i].statement+'|'+rule.history[i].section+'|'+rule.history[i].lineItem;
+          if(hk===prevHk){
+            rule.history[i].count=Math.max(0,rule.history[i].count-1);
+            break;
+          }
+        }
+        // Remove zero-count entries
+        rule.history=rule.history.filter(function(h){return h.count>0;});
+        rule.count=Math.max(0,(rule.count||1)-1);
+      }
+    }
+    _sessionSaved[key]={statement:stmt,section:sec,lineItem:li};
     lsSaveRule(accountName,{statement:stmt,section:sec,lineItem:li});
     updateRulesCount();
-  },600);
+  },800);
 }
 
 function onStmt(sel){
