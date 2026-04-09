@@ -1330,7 +1330,7 @@ function onStmt(sel){
   var liSel=tr.querySelector('.li-sel');
   liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
   liSel.value=li;
-  saveOv(tr,code,stmt,sec,li);
+  saveOv(tr,code,stmt,sec,li,false); // cascade only — no DB save yet
 }
 // Cascade: Section changed
 function onSec(sel){
@@ -1341,17 +1341,17 @@ function onSec(sel){
   var liSel=tr.querySelector('.li-sel');
   liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
   liSel.value=li;
-  saveOv(tr,code,stmt,sec,li);
+  saveOv(tr,code,stmt,sec,li,false); // cascade only — no DB save yet
 }
-// Line item changed
+// Line item changed — ONLY this triggers a Supabase save
 function onLi(sel){
   var tr=sel.closest('tr');
   var code=tr.dataset.code;
   var stmt=tr.querySelector('.stmt-sel').value,sec=tr.querySelector('.sec-sel').value,li=sel.value;
-  saveOv(tr,code,stmt,sec,li);
+  saveOv(tr,code,stmt,sec,li,true); // persist=true
 }
 
-function saveOv(tr,code,stmt,sec,li){
+function saveOv(tr,code,stmt,sec,li,persist){
   var idx=parseInt(tr.dataset.idx);
   var auto=APP.mappings[idx];
   var learned=APP.learnedMappings[code];
@@ -1374,7 +1374,7 @@ function saveOv(tr,code,stmt,sec,li){
   }else{
     APP.overrides[code]={statement:stmt,section:sec,lineItem:li};
     // ── AUTO-SAVE TO LOCALSTORAGE ──
-    if(accountName){
+    if(accountName&&persist){
       lsSaveRule(accountName,{statement:stmt,section:sec,lineItem:li});
       updateRulesCount();
     }
