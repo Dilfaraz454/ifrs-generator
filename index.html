@@ -358,8 +358,6 @@ var APP = {
   supaLoaded:false    // true once the initial Supabase fetch has completed
 };
 
-// ── SUPABASE BOOTSTRAP — load all saved rules into cache when page opens ──
-supaInit();
 // Rules saved by normalised account name, survive refresh/reopen
 // Priority: MANUAL > PY-LEARNED > STORED(Supabase) > AUTO
 // ═══════════════════════════════════════════════
@@ -368,6 +366,8 @@ supaInit();
 var SUPA_URL = 'https://bqwhcgwlloqunyjrxzxm.supabase.co';
 var SUPA_KEY = 'sb_publishable_mLY8uBKK5o75SN6jIQi5ag_cINtvQi0';
 // ─────────────────────────────────────────────────────────────────────────────
+// ── BOOTSTRAP: run after page + SDK are fully loaded ─────────────────────────
+window.addEventListener('load', function(){ supaInit(); });
 
 // ── SUPABASE HELPERS using the official JS client (loaded via CDN in <head>) ─
 
