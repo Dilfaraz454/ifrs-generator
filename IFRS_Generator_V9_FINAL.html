@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>IFRS Financial Statements Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --nv:#0D1B35;--nv2:#152545;--nv3:#1E3260;
+  --gd:#C09A3E;--gd2:#E5C06D;--gd3:rgba(192,154,62,.1);
+  --ac:#2563EB;--ac2:#EFF4FF;
+  --bg:#F4F5F7;--sf:#fff;--sf2:#F8F9FB;
+  --bd:#E2E5EC;--bd2:#CBD1DC;
+  --tx:#1A2035;--tx2:#4A5578;--tx3:#8892AA;
+  --gn:#166534;--rd:#991B1B;--gn2:#DCFCE7;--rd2:#FEE2E2;
+}
+*{box-sizing:border-box}
+body{font-family:'Source Serif 4',Georgia,serif;background:var(--bg);color:var(--tx);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── APP BAR ── */
+.bar{background:var(--nv);color:#fff;height:52px;display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.blogo{font-family:'Playfair Display',serif;font-size:17px;font-weight:700}
+.bsub{font-size:11px;opacity:.4;font-family:sans-serif}
+.bdg{background:var(--gd);color:var(--nv);padding:2px 9px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.8px;font-family:sans-serif}
+.obdg{background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);padding:2px 8px;border-radius:3px;font-size:10px;font-family:sans-serif;letter-spacing:.5px}
+
+/* ── LAYOUT ── */
+.lay{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sb{width:290px;min-width:290px;background:var(--nv);overflow-y:auto;display:flex;flex-direction:column}
+.sh{border-bottom:1px solid rgba(255,255,255,.06)}
+.shd{padding:12px 18px 7px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.3);font-family:sans-serif}
+.sbd{padding:0 18px 14px}
+.fl{display:flex;flex-direction:column;gap:8px}
+.fl label{font-size:11px;color:rgba(255,255,255,.42);font-family:sans-serif;font-weight:500;display:block;margin-bottom:2px}
+.fl input,.fl select{width:100%;padding:7px 10px;border:1px solid rgba(255,255,255,.11);border-radius:6px;font-size:12.5px;color:#fff;background:rgba(255,255,255,.07);font-family:sans-serif}
+.fl input:focus,.fl select:focus{outline:none;border-color:var(--gd)}
+.fl select option{background:#152545}
+.flr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.uz{border:1.5px dashed rgba(255,255,255,.17);border-radius:10px;padding:18px 14px;text-align:center;cursor:pointer;transition:.2s;background:rgba(255,255,255,.03)}
+.uz:hover,.uz.ov{border-color:var(--gd);background:rgba(192,154,62,.06)}
+.uzi{font-size:22px;margin-bottom:5px}
+.uzl{font-size:12.5px;color:rgba(255,255,255,.7);font-family:sans-serif}
+.uzl b{color:var(--gd2)}
+.uzh{font-size:10.5px;color:rgba(255,255,255,.28);margin-top:2px;font-family:sans-serif}
+#tfi{display:none}
+.stb{margin-top:9px;padding:7px 10px;border-radius:6px;font-size:11.5px;font-family:sans-serif}
+.ok{background:rgba(22,101,52,.14);border:1px solid rgba(22,101,52,.3);color:#86EFAC}
+.er{background:rgba(153,27,27,.14);border:1px solid rgba(153,27,27,.3);color:#FCA5A5}
+.nf{background:rgba(192,154,62,.1);border:1px solid rgba(192,154,62,.28);color:var(--gd2)}
+.mp{margin-top:7px;font-size:10.5px;color:rgba(255,255,255,.36);font-family:sans-serif;line-height:1.9}
+.mp b{color:rgba(255,255,255,.7)}
+/* Step pills */
+.steps{display:flex;flex-direction:column;gap:4px;padding:0 18px 14px}
+.step{display:flex;align-items:center;gap:8px;font-size:11.5px;font-family:sans-serif;padding:6px 10px;border-radius:6px;color:rgba(255,255,255,.35);transition:.2s}
+.step.done{color:rgba(255,255,255,.7);background:rgba(255,255,255,.05)}
+.step.active{color:#fff;background:rgba(192,154,62,.18);border:1px solid rgba(192,154,62,.3)}
+.step-num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.step.done .step-num{background:var(--gn);color:#fff}
+.step.active .step-num{background:var(--gd);color:var(--nv)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s;font-family:sans-serif}
+.bg{background:var(--gd);color:var(--nv);font-size:13.5px;padding:11px;width:100%}
+.bg:hover{background:var(--gd2)}
+.bg:disabled{opacity:.36;cursor:not-allowed}
+.bgr{background:rgba(255,255,255,.06);color:rgba(255,255,255,.52);border:1px solid rgba(255,255,255,.14);font-size:12px;padding:7px 12px;width:100%}
+.bgr:hover{background:rgba(255,255,255,.11);color:#fff}
+.bbl{background:var(--ac);color:#fff;font-size:12px;padding:6px 12px;border-radius:5px}
+.ab{padding:14px 18px;margin-top:auto;border-top:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;gap:7px}
+
+/* ── MAIN ── */
+.mn{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.mt{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 20px;display:flex;align-items:center;justify-content:space-between;min-height:50px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.tabs{display:flex;gap:1px}
+.tab{padding:14px 13px;font-size:12.5px;cursor:pointer;color:var(--tx3);font-weight:500;border:none;background:none;border-bottom:2px solid transparent;transition:.15s;font-family:sans-serif;white-space:nowrap}
+.tab.ac{color:var(--nv);border-bottom-color:var(--gd);font-weight:600}
+.tab:hover:not(.ac){color:var(--tx2)}
+.tab .tcnt{background:var(--gd);color:var(--nv);border-radius:10px;padding:0 5px;font-size:9.5px;font-weight:700;margin-left:4px;vertical-align:middle}
+.mb{padding:20px 24px;flex:1}
+.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;height:100%}
+.phi{font-size:50px;margin-bottom:14px;opacity:.28}
+.phh{font-family:'Playfair Display',serif;font-size:19px;color:var(--tx2);margin-bottom:8px}
+.php{font-size:13px;font-family:sans-serif;color:var(--tx3);max-width:360px;line-height:1.6}
+.ld{display:none;flex-direction:column;align-items:center;padding:80px 20px;text-align:center;height:100%}
+.sp{width:38px;height:38px;border:3px solid var(--bd);border-top-color:var(--gd);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ldh{font-family:'Playfair Display',serif;font-size:16px;color:var(--tx2);margin-bottom:8px}
+.lds{font-size:12px;color:var(--tx3);font-family:sans-serif;line-height:2.2}
+.sd{color:var(--gn)}.sa{color:var(--ac);font-weight:600}.sw{color:var(--tx3)}
+.tp{display:none}.tp.ac{display:block}
+
+/* ── MAPPING REVIEW PANEL ── */
+.mr-panel{padding:4px 0}
+.mr-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.mr-search{flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--bd2);border-radius:7px;font-size:13px;font-family:sans-serif;color:var(--tx);background:var(--sf)}
+.mr-search:focus{outline:none;border-color:var(--ac)}
+.mr-flt{padding:8px 10px;border:1px solid var(--bd2);border-radius:7px;font-size:12.5px;font-family:sans-serif;color:var(--tx);background:var(--sf);cursor:pointer}
+.mr-flt:focus{outline:none;border-color:var(--ac)}
+.mr-count{font-size:12px;color:var(--tx3);font-family:sans-serif;white-space:nowrap}
+.mr-genbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--nv);border-radius:10px;margin-bottom:16px}
+.mr-genbar p{font-size:12.5px;color:rgba(255,255,255,.6);font-family:sans-serif;flex:1}
+.mr-genbar b{color:var(--gd2)}
+.btn-gen-mr{background:var(--gd);color:var(--nv);font-weight:700;padding:9px 20px;border:none;border-radius:7px;font-size:13px;cursor:pointer;white-space:nowrap;font-family:sans-serif}
+.btn-gen-mr:hover{background:var(--gd2)}
+.btn-reset-all{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2);padding:7px 12px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:sans-serif}
+.btn-reset-all:hover{background:rgba(255,255,255,.18);color:#fff}
+/* Mapping table */
+.mr-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:10px;background:var(--sf)}
+table.mr-tbl{width:100%;border-collapse:collapse;font-size:12px}
+table.mr-tbl thead th{background:var(--nv);color:rgba(255,255,255,.65);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;font-family:sans-serif;white-space:nowrap;position:sticky;top:0;z-index:10}
+table.mr-tbl thead th:first-child{border-radius:9px 0 0 0}
+table.mr-tbl thead th:last-child{border-radius:0 9px 0 0}
+table.mr-tbl tbody tr{border-bottom:1px solid var(--bd);transition:.15s}
+table.mr-tbl tbody tr:last-child{border-bottom:none}
+table.mr-tbl tbody tr:hover{background:var(--sf2)}
+table.mr-tbl tbody tr.ov-row{background:#FFFBEB;border-left:3px solid var(--gd)}
+table.mr-tbl tbody tr.hidden-row{display:none}
+.mr-tbl td{padding:6px 10px;vertical-align:middle}
+.mr-tbl .td-code{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3);white-space:nowrap;width:70px}
+.mr-tbl .td-name{max-width:240px;font-size:12px;color:var(--tx)}
+.mr-tbl .td-bal{font-family:'JetBrains Mono',monospace;font-size:11.5px;white-space:nowrap;text-align:right;width:110px}
+.mr-tbl .td-bal.dr{color:var(--ac)}
+.mr-tbl .td-bal.cr{color:var(--rd)}
+.mr-tbl .td-sel{width:70px}
+.mr-tbl .td-lisel{width:210px}
+.mr-sel{width:100%;padding:4px 6px;border:1px solid var(--bd2);border-radius:5px;font-size:11.5px;font-family:sans-serif;color:var(--tx);background:var(--sf);cursor:pointer}
+.mr-sel:focus{outline:none;border-color:var(--ac)}
+tr.ov-row .mr-sel{border-color:var(--gd);background:#FFF9EC}
+.mr-tbl .td-act{width:60px;text-align:center}
+.btn-reset-row{background:none;border:none;cursor:pointer;font-size:13px;color:var(--gd);padding:2px 4px;border-radius:4px;opacity:.7}
+.btn-reset-row:hover{opacity:1;background:var(--gd3)}
+.ov-badge{display:inline-block;font-size:9px;font-weight:700;font-family:sans-serif;padding:1px 5px;border-radius:3px;background:var(--gd);color:var(--nv);letter-spacing:.5px}
+.auto-badge{display:inline-block;font-size:9px;font-family:sans-serif;padding:1px 5px;border-radius:3px;background:var(--ac2);color:var(--ac);letter-spacing:.2px;position:relative;cursor:help}
+.auto-badge[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);right:0;background:#1A2035;color:#dce3f0;padding:9px 12px;border-radius:8px;font-size:11.5px;white-space:pre-line;width:270px;line-height:1.6;z-index:9999;pointer-events:none;opacity:0;transition:opacity .18s;box-shadow:0 4px 16px rgba(0,0,0,.4);font-family:sans-serif;text-align:left;font-weight:400;letter-spacing:0;border:1px solid rgba(255,255,255,.08)}
+.auto-badge[data-tip]:hover::after{opacity:1}
+.auto-badge[data-tip]::before{content:'';position:absolute;bottom:calc(100% + 2px);right:6px;border:5px solid transparent;border-top-color:#1A2035;opacity:0;transition:opacity .18s;z-index:9999;pointer-events:none}
+.auto-badge[data-tip]:hover::before{opacity:1}
+
+/* ── STATEMENTS ── */
+.wrap{max-width:900px;margin:0 auto}
+.pg{background:var(--sf);border:1px solid var(--bd);border-radius:12px;margin-bottom:22px;overflow:hidden}
+.pgh{padding:24px 34px 0;text-align:center}
+.pgco{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--nv)}
+.pgsb{font-size:11.5px;color:var(--tx3);margin-top:3px;font-family:sans-serif}
+.pgt{margin-top:12px}
+.pgt h2{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.pgt p{font-size:11.5px;color:var(--tx3);margin-top:2px;font-family:sans-serif}
+.hrl{height:2px;background:var(--nv);margin:12px 34px 0}
+.tw{padding:14px 34px 26px;overflow-x:auto}
+table.tb{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tb th{padding:6px 9px;text-align:right;font-size:10.5px;font-weight:700;letter-spacing:.4px;color:var(--tx3);border-bottom:1px solid var(--nv);font-family:sans-serif;text-transform:uppercase}
+table.tb th:first-child{text-align:left}
+table.tb td{padding:4px 9px;text-align:right;vertical-align:middle}
+table.tb td:first-child{text-align:left}
+tr.rsh td{padding-top:15px;font-weight:700;font-size:12px;letter-spacing:.2px;color:var(--nv3);font-family:'Playfair Display',serif}
+tr.rsh.f td{padding-top:4px}
+tr.rli td:first-child{padding-left:22px;color:var(--tx2)}
+tr.rst td{font-weight:600;border-top:1px solid var(--bd2);padding-top:7px;padding-bottom:7px;color:var(--nv2)}
+tr.rtot td{font-weight:700;border-top:2px solid var(--nv);border-bottom:2px solid var(--nv);padding:8px 9px;font-size:13.5px;font-family:'Playfair Display',serif}
+tr.rgt td{font-weight:700;border-top:3px double var(--nv);padding:8px 9px;font-size:14px;font-family:'Playfair Display',serif;background:rgba(13,27,53,.025)}
+tr.rb td{height:7px}
+.num{font-family:'JetBrains Mono',monospace;font-size:12px}
+.neg{color:var(--rd)}
+.nil{color:var(--tx3)}
+.pf{color:var(--gn);font-weight:700}
+.lf{color:var(--rd);font-weight:700}
+.ck{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;font-size:11px;font-family:sans-serif;font-weight:600;margin-top:10px}
+.cko{background:rgba(22,101,52,.09);color:var(--gn);border:1px solid rgba(22,101,52,.2)}
+.ckf{background:rgba(153,27,27,.09);color:var(--rd);border:1px solid rgba(153,27,27,.2)}
+/* notes */
+.nb{padding:18px 34px 28px}
+.nc{margin-bottom:26px;border-left:3px solid var(--gd);padding-left:15px}
+.nc h4{font-family:'Playfair Display',serif;font-size:13.5px;color:var(--nv);margin-bottom:7px;font-weight:600}
+.nc p,.nc li{font-size:12.5px;color:var(--tx2);line-height:1.7}
+.nc ul{padding-left:16px;margin-top:4px}
+.nt{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:9px}
+.nt th{background:var(--sf2);padding:6px 9px;text-align:right;font-weight:600;font-size:10.5px;color:var(--tx3);border-bottom:1px solid var(--bd);font-family:sans-serif;text-transform:uppercase}
+.nt th:first-child{text-align:left}
+.nt td{padding:5px 9px;text-align:right;border-bottom:1px solid var(--bd)}
+.nt td:first-child{text-align:left;color:var(--tx2)}
+.nt tr.ntt td{font-weight:700;border-top:1px solid var(--nv);border-bottom:2px solid var(--nv)}
+/* Prior year upload zone */
+.uz-sm{padding:12px 14px}
+.uz-sm .uzl{font-size:12px}
+.py-tag{font-size:9px;background:rgba(255,255,255,.12);padding:1px 6px;border-radius:3px;color:rgba(255,255,255,.45);font-weight:400;letter-spacing:.3px;margin-left:5px}
+/* Learned badge */
+.learned-badge{display:inline-block;font-size:9px;font-weight:700;font-family:sans-serif;padding:1px 5px;border-radius:3px;background:#ECFDF5;color:#065F46;letter-spacing:.5px}
+tr.learned-row{background:#F0FDF4}
+tr.learned-row:hover{background:#D1FAE5}
+tr.learned-row .mr-sel{background:#F0FDF4;border-color:#6EE7B7}
+/* Saved (localStorage) badge */
+.saved-badge{display:inline-block;font-size:9px;font-weight:700;font-family:sans-serif;padding:1px 5px;border-radius:3px;background:#F5F3FF;color:#6D28D9;letter-spacing:.5px;cursor:default}
+tr.saved-row{background:#F5F3FF}
+tr.saved-row:hover{background:#EDE9FE}
+tr.saved-row .mr-sel{background:#F5F3FF;border-color:#C4B5FD}
+/* Rules manager button */
+.btn-rules{background:rgba(167,139,250,.18);color:#A78BFA;border:1px solid rgba(167,139,250,.35);padding:7px 12px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:sans-serif;font-weight:600;transition:.15s}
+.btn-rules:hover{background:rgba(167,139,250,.28);color:#fff}
+/* Rules manager modal */
+.rules-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center}
+.rules-modal{background:var(--sf);border-radius:14px;width:min(860px,96vw);max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden}
+.rules-modal-hd{background:var(--nv);padding:16px 22px;display:flex;align-items:center;gap:10px}
+.rules-modal-hd h3{font-family:'Playfair Display',serif;font-size:16px;color:#fff;flex:1}
+.rules-modal-hd p{font-size:11px;color:rgba(255,255,255,.45);font-family:sans-serif}
+.rules-modal-acts{display:flex;gap:8px;padding:14px 22px;border-bottom:1px solid var(--bd);background:var(--sf2);flex-wrap:wrap}
+.rules-modal-body{overflow-y:auto;flex:1}
+.rules-modal table{width:100%;border-collapse:collapse;font-size:12px}
+.rules-modal thead th{background:var(--nv);color:rgba(255,255,255,.6);padding:7px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.8px;font-family:sans-serif;position:sticky;top:0}
+.rules-modal tbody tr{border-bottom:1px solid var(--bd)}
+.rules-modal tbody tr:hover{background:var(--sf2)}
+.rules-modal tbody td{padding:7px 12px;font-family:sans-serif;vertical-align:middle}
+.rules-modal .del-rule{background:none;border:1px solid #FECACA;color:#DC2626;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:sans-serif}
+.rules-modal .del-rule:hover{background:#FEF2F2}
+.rules-empty{padding:40px;text-align:center;color:var(--tx3);font-family:sans-serif;font-size:13px}
+.btn-exp{background:rgba(29,111,66,.15);color:#6EE7B7;border:1px solid rgba(29,111,66,.3);padding:7px 13px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:sans-serif;font-weight:600}
+.btn-exp:hover{background:rgba(29,111,66,.25)}
+.btn-imp{background:rgba(37,99,235,.12);color:var(--ac);border:1px solid rgba(37,99,235,.25);padding:7px 13px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:sans-serif;font-weight:600}
+.btn-imp:hover{background:rgba(37,99,235,.2)}
+.btn-clr{background:rgba(153,27,27,.1);color:#DC2626;border:1px solid rgba(153,27,27,.2);padding:7px 13px;border-radius:6px;font-size:11.5px;cursor:pointer;font-family:sans-serif;font-weight:600}
+.btn-clr:hover{background:rgba(153,27,27,.18)}
+/* PY column */
+.td-py{width:145px;font-size:11px;color:var(--tx3);font-family:sans-serif}
+.py-pill{display:inline-block;background:var(--sf2);border:1px solid var(--bd2);padding:1px 6px;border-radius:3px;font-size:10px;white-space:nowrap;max-width:142px;overflow:hidden;text-overflow:ellipsis}
+.py-pill.match{background:#F0FDF4;border-color:#6EE7B7;color:#065F46}
+.py-pill.diff{background:#FFFBEB;border-color:#FCD34D;color:#92400E}
+/* Comparative column */
+.py-col{color:var(--tx3)!important}
+table.tb th.py-h{color:var(--tx3);font-style:italic}
+/* Excel export */
+.bxl{background:#1D6F42;color:#fff;font-size:12px;padding:6px 12px;border-radius:5px;font-family:sans-serif;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.bxl:hover{background:#155C35}
+.bgx{background:rgba(29,111,66,.15);color:#6EE7B7;border:1px solid rgba(29,111,66,.3);font-size:12px;padding:7px 12px;width:100%;font-family:sans-serif;font-weight:600;cursor:pointer;border-radius:7px;display:flex;align-items:center;justify-content:center;gap:5px;transition:.15s}
+.bgx:hover{background:rgba(29,111,66,.25)}
+.bgx:disabled{opacity:.35;cursor:not-allowed}
+@media print{.sb,.bar,.mt{display:none!important}.mn{overflow:visible!important}.mb{padding:8px!important}.pg{border:none!important;border-radius:0!important;page-break-after:always}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="blogo">FinState Pro</span>
+  <span class="bsub">IFRS Generator</span>
+  <div style="flex:1"></div>
+  <span class="obdg">✦ WORKS OFFLINE</span>
+  <span class="bdg">IFRS</span>
+</div>
+<div class="lay">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sh">
+      <div class="shd">Trial Balance</div>
+      <div class="sbd">
+        <div class="uz" id="uz"><div class="uzi">📂</div><div class="uzl"><b>Click or drag</b> to upload</div><div class="uzh">Excel (.xlsx / .xls) — any TB format</div></div>
+        <input type="file" id="tfi" accept=".xlsx,.xls">
+        <div id="fi" class="stb nf" style="display:none"></div>
+        <div id="ps" class="stb ok" style="display:none"></div>
+        <div id="mp" class="mp" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="sh">
+      <div class="shd">Prior Year <span class="py-tag">OPTIONAL</span></div>
+      <div class="sbd">
+        <div class="uz uz-sm" id="uzPY">
+          <div class="uzi" style="font-size:18px;margin-bottom:3px">📑</div>
+          <div class="uzl"><b>Click or drag</b> prior year file</div>
+          <div class="uzh">Trial Balance <i>or</i> Financial Statement Excel</div>
+        </div>
+        <input type="file" id="tfiPY" accept=".xlsx,.xls">
+        <div id="fiPY" class="stb nf" style="display:none"></div>
+        <div id="psPY" class="stb ok" style="display:none"></div>
+        <div id="pyType" style="display:none;margin-top:6px;font-size:10.5px;font-family:sans-serif;color:rgba(255,255,255,.4);padding:0 2px"></div>
+      </div>
+    </div>
+
+    <!-- Steps indicator -->
+    <div class="sh">
+      <div class="shd">Workflow</div>
+      <div class="steps">
+        <div class="step" id="stp1"><span class="step-num">1</span> Upload Trial Balance</div>
+        <div class="step" id="stp2"><span class="step-num">2</span> Review Account Mappings</div>
+        <div class="step" id="stp3"><span class="step-num">3</span> Generate Statements</div>
+      </div>
+    </div>
+
+    <div class="sh">
+      <div class="shd">Company Information</div>
+      <div class="sbd fl">
+        <div><label>Company Name</label><input id="co" placeholder="Auto-detected…"></div>
+        <div><label>Reporting Period</label><input id="pe" placeholder="Year ended 31 December 2025"></div>
+        <div class="flr">
+          <div><label>Currency</label>
+            <select id="cu"><option>SAR</option><option>AED</option><option>USD</option><option>EUR</option><option>GBP</option><option>PKR</option><option>QAR</option><option>Other</option></select>
+          </div>
+          <div><label>Rounding</label>
+            <select id="ro"><option value="1">Actual</option><option value="1000">Thousands</option><option value="1000000">Millions</option></select>
+          </div>
+        </div>
+        <div><label>Status / Preparer Note</label><input id="pr" placeholder="e.g. Draft — Unaudited"></div>
+      </div>
+    </div>
+
+    <div class="sh">
+      <div class="shd">Options</div>
+      <div class="sbd fl">
+        <div class="flr">
+          <div><label>Show Notes</label><select id="sn"><option value="1">Yes</option><option value="0">No</option></select></div>
+          <div><label>P&amp;L Lines</label><select id="pd"><option value="1">Detailed</option><option value="0">Totals Only</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ab">
+      <button class="btn bg" id="gb" disabled onclick="gen()">✦  Generate IFRS Statements</button>
+      <button class="btn bgx" id="exBtn" disabled onclick="exportExcel()">📊  Export to Excel</button>
+      <button class="btn bgr" onclick="loadSample()">Load Sample Data</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="mn">
+    <div class="mt">
+      <div class="tabs" id="tabsBar" style="display:none">
+        <button class="tab" id="tab-mr" onclick="sw('mr',this)">⚙ Mapping Review <span class="tcnt" id="ovCnt" style="display:none">0</span></button>
+        <button class="tab" onclick="sw('sfp',this)">Financial Position</button>
+        <button class="tab" onclick="sw('pl',this)">Profit &amp; Loss</button>
+        <button class="tab" onclick="sw('eq',this)">Changes in Equity</button>
+        <button class="tab" onclick="sw('nt',this)">Notes</button>
+      </div>
+      <div id="eb" style="display:none;gap:6px;display:none">
+        <button class="bxl" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn bbl" onclick="window.print()">🖨 Print / PDF</button>
+      </div>
+    </div>
+    <div class="mb" id="mb">
+      <div class="ph">
+        <div class="phi">📋</div>
+        <div class="phh">No Statements Generated</div>
+        <p class="php">Upload any trial balance Excel file. After parsing, review how each account is categorised, adjust any entry, then generate complete IFRS financial statements with notes — fully offline.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+var APP = {
+  tb:null, mappings:[], overrides:{}, stmts:null,
+  tbPrior:null, mappingsPrior:[], stmtsPrior:null,
+  learnedMappings:{}, // code → {statement,section,lineItem}  learned from PY
+  pyPeriod:'',
+  rulesCache:{},      // in-memory mirror of Supabase learned_rules table
+  supaLoaded:false    // true once the initial Supabase fetch has completed
+};
+
+// ── SUPABASE BOOTSTRAP — load all saved rules into cache when page opens ──
+supaInit();
+// Rules saved by normalised account name, survive refresh/reopen
+// Priority: MANUAL > PY-LEARNED > STORED(Supabase) > AUTO
+// ═══════════════════════════════════════════════
+
+// ── PASTE YOUR SUPABASE CREDENTIALS HERE ────────────────────────────────────
+var SUPA_URL = 'https://bqwhcgwlloqunyjrxzxm.supabase.co';
+var SUPA_KEY = 'sb_publishable_mLY8uBKK5o75SN6jIQi5ag_cINtvQi0';
+// ────────────────────────────────────────────────────────────────────────────
+
+// ── SUPABASE HELPERS (fire-and-forget; never block the UI) ──────────────────
+
+async function supaInit(){
+  // Load ALL saved rules from Supabase into the in-memory cache at startup.
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/learned_rules?select=*',{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    if(r.ok){
+      var rows=await r.json();
+      APP.rulesCache={};
+      rows.forEach(function(row){
+        APP.rulesCache[row.account_key]={
+          originalName : row.original_name,
+          statement    : row.statement,
+          section      : row.section,
+          lineItem     : row.line_item,
+          count        : row.count,
+          pinToLatest  : row.pin_to_latest,
+          history      : row.history||[],
+          savedAt      : row.saved_at,
+          latestStatement: row.latest_statement,
+          latestSection  : row.latest_section,
+          latestLineItem : row.latest_line_item
+        };
+      });
+      APP.supaLoaded=true;
+      // Refresh counts once data arrives
+      updateRulesCount();
+      if(APP.tb)renderMappingPanel();
+    }
+  }catch(e){
+    // Offline fallback: try the localStorage backup copy
+    try{var bk=localStorage.getItem('ifrs_rules_backup');if(bk)APP.rulesCache=JSON.parse(bk);}catch(e2){}
+  }
+}
+
+async function supaSyncRule(key,ruleData){
+  // Upsert a single rule row in Supabase (called after every correction).
+  try{
+    await fetch(SUPA_URL+'/rest/v1/learned_rules',{
+      method:'POST',
+      headers:{
+        'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,
+        'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'
+      },
+      body:JSON.stringify({
+        account_key    : key,
+        original_name  : ruleData.originalName||'',
+        statement      : ruleData.statement,
+        section        : ruleData.section,
+        line_item      : ruleData.lineItem,
+        count          : ruleData.count,
+        pin_to_latest  : ruleData.pinToLatest||false,
+        history        : ruleData.history||[],
+        saved_at       : ruleData.savedAt||new Date().toISOString().split('T')[0],
+        latest_statement: ruleData.latestStatement||ruleData.statement,
+        latest_section  : ruleData.latestSection||ruleData.section,
+        latest_line_item: ruleData.latestLineItem||ruleData.lineItem,
+        updated_at     : new Date().toISOString()
+      })
+    });
+    // Always keep an offline backup in localStorage
+    try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}
+  }catch(e){console.warn('[IFRS] Supabase sync failed — rule cached locally only.',e);}
+}
+
+async function supaDeleteOne(key){
+  try{
+    await fetch(SUPA_URL+'/rest/v1/learned_rules?account_key=eq.'+encodeURIComponent(key),{
+      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}
+  }catch(e){console.warn('[IFRS] Supabase delete failed.',e);}
+}
+
+async function supaDeleteAll(){
+  // Deletes every row that belongs to this anonymous user.
+  // Because RLS allows all, this clears the shared table — fine for single-user setup.
+  // For multi-user you would add a user_id filter here later.
+  try{
+    await fetch(SUPA_URL+'/rest/v1/learned_rules?id=not.is.null',{
+      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    try{localStorage.removeItem('ifrs_rules_backup');}catch(e){}
+  }catch(e){console.warn('[IFRS] Supabase clear-all failed.',e);}
+}
+
+// ── SYNCHRONOUS READ/WRITE API (uses the in-memory cache) ───────────────────
+// All existing call-sites remain unchanged — only the storage back-end is new.
+
+function lsLoad(){return APP.rulesCache;}
+function lsSave(rules){
+  APP.rulesCache=rules;
+  // Background-sync every rule to Supabase
+  Object.keys(rules).forEach(function(k){supaSyncRule(k,rules[k]);});
+  try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(rules));}catch(e){}
+}
+function normName(n){return String(n||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/['']/g,"'").replace(/[^a-z0-9 &\/\-]/g,'');}
+
+function lsSaveRule(accountName,mapping){
+  var key=normName(accountName);
+  var ex=APP.rulesCache[key]||{originalName:accountName,savedAt:'',count:0,pinToLatest:false,history:[],statement:mapping.statement,section:mapping.section,lineItem:mapping.lineItem};
+
+  // ── Track history per unique classification ──
+  var hk=mapping.statement+'|'+mapping.section+'|'+mapping.lineItem;
+  var found=false;
+  ex.history=ex.history||[];
+  for(var i=0;i<ex.history.length;i++){
+    if(ex.history[i].statement+'|'+ex.history[i].section+'|'+ex.history[i].lineItem===hk){
+      ex.history[i].count++;found=true;break;
+    }
+  }
+  if(!found)ex.history.push({statement:mapping.statement,section:mapping.section,lineItem:mapping.lineItem,count:1});
+
+  ex.count=(ex.count||0)+1;
+  ex.savedAt=new Date().toISOString().split('T')[0];
+  ex.latestStatement=mapping.statement;
+  ex.latestSection=mapping.section;
+  ex.latestLineItem=mapping.lineItem;
+
+  // ── Winner: pinToLatest → last wins, otherwise most-frequent wins ──
+  if(ex.pinToLatest){
+    ex.statement=mapping.statement;ex.section=mapping.section;ex.lineItem=mapping.lineItem;
+  }else{
+    var best=ex.history[0];
+    for(var j=1;j<ex.history.length;j++){if(ex.history[j].count>best.count)best=ex.history[j];}
+    ex.statement=best.statement;ex.section=best.section;ex.lineItem=best.lineItem;
+  }
+
+  // Write to cache first (instant), then background-sync to Supabase
+  APP.rulesCache[key]=ex;
+  supaSyncRule(key,ex);
+}
+
+function lsDeleteRule(key){delete APP.rulesCache[key];supaDeleteOne(key);try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}}
+
+function lsFindRule(accountName){
+  var rules=APP.rulesCache,key=normName(accountName);
+  if(rules[key])return rules[key];
+  // Partial match: stored key ⊆ account name (min 6 chars to avoid false positives)
+  var keys=Object.keys(rules);
+  for(var i=0;i<keys.length;i++){
+    if(keys[i].length>=6&&key.includes(keys[i]))return rules[keys[i]];
+  }
+  return null;
+}
+
+function lsCount(){return Object.keys(APP.rulesCache).length;}
+
+// ═══════════════════════════════════════════════
+// IFRS TREE — all valid statement/section/lineItem combos
+// ═══════════════════════════════════════════════
+var T = {
+  SFP: {
+    NCA: { lbl:'Non-Current Assets', items:['Property, Plant and Equipment','Capital Work in Progress','Intangible Assets','Right-of-Use Assets','Long-term Investments','Long-term Receivables','Investment Property','Deferred Tax Asset','Other Non-Current Assets'] },
+    CA:  { lbl:'Current Assets',     items:['Cash and Cash Equivalents','Trade and Other Receivables','Inventories','Prepayments and Deposits','VAT and Tax Receivables','Employee and Staff Advances','Other Current Assets'] },
+    E:   { lbl:'Equity',             items:['Share Capital','Retained Earnings','Other Reserves','Partner / Shareholder Accounts'] },
+    NCL: { lbl:'Non-Current Liabilities', items:['Long-term Borrowings','Lease Liabilities','Deferred Tax Liability','Employee Benefit Provisions','Other Non-Current Liabilities'] },
+    CL:  { lbl:'Current Liabilities', items:['Trade and Other Payables','Accrued Liabilities','Short-term Borrowings','VAT and Tax Payables','Customer Advances','Deferred Revenue','Partner / Shareholder Accounts','Other Current Liabilities'] }
+  },
+  IS: {
+    REV:  { lbl:'Revenue',              items:['Revenue','Service Revenue','Product Sales Revenue','Rental Income','Commission Income','Management Fee Income','Other Revenue'] },
+    COS:  { lbl:'Cost of Sales',        items:['Cost of Revenue','Labour Costs — Cost of Sales','Material Costs','Employee Benefits — Cost of Sales','Sub-contractor Costs','Depreciation — Cost of Sales','Rent — Operations','Utilities — Operations','Travel and Related Costs','Other Cost of Sales'] },
+    DIST: { lbl:'Distribution Expenses',items:['Distribution and Selling Expenses','Marketing and Advertising','Freight and Delivery Costs','Sales Commissions','Showroom and Exhibition Expenses'] },
+    ADMIN:{ lbl:'Admin Expenses',       items:['Salaries and Employee Benefits','Social Insurance and GOSI','HR and Government Fees','Professional and Consultancy Fees','Rent Expenses','Utilities and Technology','Travel and Accommodation','Vehicle and Transportation Expenses','Maintenance and Repairs','Insurance Expenses','Depreciation — Admin','Office and Administrative Expenses','General and Administrative Expenses'] },
+    OI:   { lbl:'Other Income',         items:['Other Income','Gain on Disposal of Assets','Foreign Exchange Gain','Rental Income (Secondary)','Commission Income (Secondary)','Reimbursement Income','Scrap Sales Income','Miscellaneous Income'] },
+    OE:   { lbl:'Other Expenses',       items:['Other Expenses','Loss on Disposal of Assets','Foreign Exchange Loss','Bad Debt Expense','Impairment Loss','Miscellaneous Expense'] },
+    FI:   { lbl:'Finance Income',       items:['Finance Income','Interest Income','Profit on Bank Deposits','Dividend Income'] },
+    FC:   { lbl:'Finance Costs',        items:['Finance Costs','Interest Expense','Bank Charges and Fees','Murabaha Finance Costs','Late Payment Penalties'] },
+    TAX:  { lbl:'Tax / Zakat',          items:['Zakat / Income Tax','Deferred Tax Expense','Withholding Tax Expense'] }
+  }
+};
+
+// Section labels for filter dropdown
+var SEC_LABELS = {
+  NCA:'Non-Current Assets', CA:'Current Assets', E:'Equity', NCL:'Non-Current Liabilities', CL:'Current Liabilities',
+  REV:'Revenue', COS:'Cost of Sales', DIST:'Distribution', ADMIN:'Admin Expenses',
+  OI:'Other Income', OE:'Other Expenses', FI:'Finance Income', FC:'Finance Costs', TAX:'Tax/Zakat'
+};
+
+// ═══════════════════════════════════════════════
+// UPLOAD
+// ═══════════════════════════════════════════════
+var uz=document.getElementById('uz'),tfi=document.getElementById('tfi');
+uz.addEventListener('click',function(){tfi.click();});
+uz.addEventListener('dragover',function(e){e.preventDefault();uz.classList.add('ov');});
+uz.addEventListener('dragleave',function(){uz.classList.remove('ov');});
+uz.addEventListener('drop',function(e){e.preventDefault();uz.classList.remove('ov');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+tfi.addEventListener('change',function(e){if(e.target.files[0])loadFile(e.target.files[0]);});
+
+function loadFile(f){
+  sbox('fi','nf','📄 '+f.name+' ('+(f.size/1024).toFixed(1)+' KB)');
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var tb=parseTB(wb);
+      APP.tb=tb; APP.overrides={}; APP.stmts=null;
+      APP.mappings=smartMap(tb.accounts);
+      sbox('ps','ok','✓ Parsed '+tb.accounts.length+' accounts — '+countSecs(APP.mappings)+' IFRS categories');
+      var m=document.getElementById('mp');
+      m.style.display='block';
+      m.innerHTML='Company: <b>'+esc(tb.companyName)+'</b><br>Period: <b>'+esc(tb.period)+'</b><br>Accounts: <b>'+tb.accounts.length+'</b> &nbsp;|&nbsp; Currency: <b>'+tb.currency+'</b>';
+      if(tb.companyName)document.getElementById('co').value=tb.companyName;
+      if(tb.period)document.getElementById('pe').value=tb.period;
+      setCurrency(tb.currency);
+      document.getElementById('gb').disabled=false;
+      setSteps(2);
+      showMappingTab();
+    }catch(err){sbox('ps','er','✗ '+err.message);console.error(err);}
+  };
+  r.readAsArrayBuffer(f);
+}
+
+function countSecs(maps){var s={};maps.forEach(function(m){s[m.section]=1;});return Object.keys(s).length;}
+function sbox(id,cls,msg){var e=document.getElementById(id);e.style.display='block';e.className='stb '+cls;e.textContent=msg;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setCurrency(c){var s=document.getElementById('cu');for(var i=0;i<s.options.length;i++)if(s.options[i].value===c){s.selectedIndex=i;return;};}
+function setSteps(n){
+  ['stp1','stp2','stp3'].forEach(function(id,i){
+    var el=document.getElementById(id);
+    var step=i+1;
+    el.className='step'+(step<n?' done':step===n?' active':'');
+  });
+}
+
+// ═══════════════════════════════════════════════
+// PRIOR YEAR UPLOAD
+// ═══════════════════════════════════════════════
+var uzPY=document.getElementById('uzPY'),tfiPY=document.getElementById('tfiPY');
+uzPY.addEventListener('click',function(){tfiPY.click();});
+uzPY.addEventListener('dragover',function(e){e.preventDefault();uzPY.classList.add('ov');});
+uzPY.addEventListener('dragleave',function(){uzPY.classList.remove('ov');});
+uzPY.addEventListener('drop',function(e){e.preventDefault();uzPY.classList.remove('ov');if(e.dataTransfer.files[0])loadFilePY(e.dataTransfer.files[0]);});
+tfiPY.addEventListener('change',function(e){if(e.target.files[0])loadFilePY(e.target.files[0]);});
+
+function loadFilePY(f){
+  sbox('fiPY','nf','📄 PY: '+f.name);
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var tb=parseTB(wb);
+      APP.tbPrior=tb;
+      APP.mappingsPrior=smartMap(tb.accounts);
+      APP.pyPeriod=tb.period;
+      buildLearnedMappings();
+      sbox('psPY','ok','✓ '+tb.accounts.length+' PY accounts — '+Object.keys(APP.learnedMappings).length+' treatments learned');
+      if(APP.tb) renderMappingPanel();          // refresh CY review with PY column
+    }catch(err){sbox('psPY','er','✗ '+err.message);}
+  };
+  r.readAsArrayBuffer(f);
+}
+
+// Build learned mappings: same account code → same IFRS treatment in CY
+function buildLearnedMappings(){
+  APP.learnedMappings={};
+  if(!APP.tbPrior||!APP.mappingsPrior.length)return;
+  APP.tbPrior.accounts.forEach(function(a,i){
+    var m=APP.mappingsPrior[i];if(m)APP.learnedMappings[a.code]=m;
+  });
+}
+
+// Effective mapping: MANUAL > PY-LEARNED > STORED(localStorage) > AUTO
+function effMap(code,idx){
+  if(APP.overrides[code])return{m:APP.overrides[code],src:'MANUAL'};
+  if(APP.learnedMappings[code])return{m:APP.learnedMappings[code],src:'LEARNED'};
+  // Check localStorage rules by account name
+  if(APP.tb&&APP.tb.accounts[idx]){
+    var stored=lsFindRule(APP.tb.accounts[idx].name);
+    if(stored)return{m:stored,src:'SAVED'};
+  }
+  return{m:APP.mappings[idx]||{statement:'SFP',section:'CA',lineItem:'Other Current Assets',reason:'No code prefix matched → fallback: Other Current Assets'},src:'AUTO'};
+}
+
+// ═══════════════════════════════════════════════
+// PARSER (universal — handles all TB formats)
+// ═══════════════════════════════════════════════
+function parseTB(wb){
+  var sn=wb.SheetNames[0];
+  for(var i=0;i<wb.SheetNames.length;i++){if(/trial|balance/i.test(wb.SheetNames[i])&&!/filter/i.test(wb.SheetNames[i])){sn=wb.SheetNames[i];break;}}
+  var ws=wb.Sheets[sn];
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:false});
+  var hdr=2;
+  for(var i=0;i<Math.min(rows.length,15);i++){
+    var r=(rows[i]||[]).map(function(c){return String(c||'').toLowerCase();});
+    if(r.some(function(c){return c.trim()==='debit'||c.includes('debit')})&&r.some(function(c){return c.trim()==='credit'||c.includes('credit')})){hdr=i;break;}
+  }
+  var hr=rows[hdr]||[],dcs=[],ccs=[],codeC=0,nameC=1;
+  hr.forEach(function(c,i){var s=String(c||'').toLowerCase().trim();if(s==='debit'||s==='d'||s.includes('ending debit'))dcs.push(i);if(s==='credit'||s==='c'||s.includes('ending credit'))ccs.push(i);if(s==='code'||s==='account code')codeC=i;if(s==='account'||s==='account name'||s==='description')nameC=i;});
+  var edC=dcs.length?dcs[dcs.length-1]:6,ecC=ccs.length?ccs[ccs.length-1]:7;
+  var period='',currency='SAR';
+  for(var i=0;i<hdr;i++){
+    var row=rows[i]||[];
+    for(var j=0;j<row.length;j++){var s=String(row[j]||'').trim();if(!s)continue;if(/\bSAR\b/.test(s))currency='SAR';else if(/\bAED\b/.test(s))currency='AED';else if(/\bUSD\b/.test(s))currency='USD';else if(/\bEUR\b/.test(s))currency='EUR';else if(/\bGBP\b/.test(s))currency='GBP';else if(/\bPKR\b/.test(s))currency='PKR';if(!period&&(/from.*to/i.test(s)||/\d{4}-\d{2}-\d{2}/.test(s)))period=s;}
+    var pc=String(row[4]||row[3]||'').trim();if(!period&&/^\d{4}$/.test(pc))period='Year ended 31 December '+pc;else if(!period&&pc.length>4&&pc.length<40&&/\d{4}/.test(pc))period=pc;
+  }
+  if(!period){var h4=String(hr[4]||hr[3]||'').trim();if(/^\d{4}$/.test(h4))period='Year ended 31 December '+h4;}
+  if(!period)period='Year ended 31 December 2025';
+  var co='';
+  if(wb.SheetNames.indexOf('Filters')>=0){var fw=wb.Sheets['Filters'];var fr=XLSX.utils.sheet_to_json(fw,{header:1,defval:null});for(var i=0;i<fr.length;i++){if(/company/i.test(String(fr[i][0]||''))&&fr[i][1]){co=String(fr[i][1]);break;}}}
+  if(!co){for(var i=0;i<Math.min(hdr,4);i++){var row=rows[i]||[];for(var j=0;j<row.length;j++){var s=String(row[j]||'').trim();if(s.length>5&&!/trial|balance|code|date|filter/i.test(s)&&!/^\d/.test(s)){co=s;break;}}if(co)break;}}
+  if(co){var mm=co.match(/Trial Balance\s*[-–]\s*(.+?)(?:\s*[-–]\s*(?:SAR|AED|USD|EUR|GBP))?$/i);if(mm)co=mm[1].trim();else co=co.replace(/Trial Balance.*/i,'').trim()||co;}
+  if(!co)co='Company';
+  var accounts=[],sections=[];
+  for(var i=hdr+1;i<rows.length;i++){
+    var row=rows[i];if(!row)continue;
+    var rawCode=row[codeC],name=String(row[nameC]||'').trim();
+    if(!name||/^total$/i.test(name)||/^grand total/i.test(name))continue;
+    var cs=String(rawCode||'').trim().replace(/\.0$/,'');
+    var isLeaf=cs!==''&&cs!=='nan'&&!isNaN(parseFloat(cs));
+    var ed=toN(row[edC]),ec=toN(row[ecC]),net=ed-ec;
+    if(isLeaf){if(ed===0&&ec===0)continue;accounts.push({code:cs,name:name,endDebit:ed,endCredit:ec,net:net});}
+    else if(name&&/^\d/.test(name))sections.push(name);
+  }
+  return{accounts:accounts,sections:sections,companyName:co,period:period,currency:currency};
+}
+function toN(v){if(v===null||v===undefined||v==='')return 0;return parseFloat(String(v).replace(/,/g,''))||0;}
+
+// ═══════════════════════════════════════════════
+// ENHANCED SMART MAPPER — 120+ patterns
+// ═══════════════════════════════════════════════
+function smartMap(accounts){
+  return accounts.map(function(a){
+    var m=mapOne(a);
+    m.reason=getAutoReason(a,m);
+    return m;
+  });
+}
+
+// Generate a human-readable explanation for why an account was auto-mapped
+function getAutoReason(a,m){
+  var code=String(a.code||''),name=(a.name||'').toLowerCase().trim(),net=a.net;
+  var d1=code[0]||'',d2=code.substring(0,2),d3=code.substring(0,3);
+  var lines=[];
+
+  // Which rule fired?
+  if(/^accrued\b|^accrual\b|accrued.*expense|accrued.*liabilit|accrued.*salary|accrued.*wage|accrued.*bonus|accrued.*leave|accrued.*gosi|accrued.*audit|accrued.*rent/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" starts with "Accrued/Accrual" → Current Liability regardless of code');
+  } else if(/^payable\s+to\b/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" starts with "Payable to" → Trade/Other Payable (CL)');
+  } else if(/\btrade payable\b|\baccounts payable\b|\bsuppliers? payable\b/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches trade/accounts payable → Current Liability');
+  } else if(/prior.*year.*adjust|previous.*year.*adjust/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" is a prior year adjustment → Equity (Retained Earnings)');
+  } else if(/deferred revenue|unearned revenue|unearned.*income/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" is deferred/unearned revenue → Current Liability');
+  } else if(/salary.*payable|salaries.*payable|wages.*payable/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" is salary/wages payable → Accrued Liabilities');
+  } else if(/gosi.*payable|social.*insur.*payable/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" is GOSI payable → Accrued Liabilities');
+  } else if(/\baccumulated p[\s\/&]+l\b|^acc.*p[\s\/&]+l$|net.*profit.*b\/f|profit.*brought.*forward/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" is Accumulated P/L → Equity (Retained Earnings)');
+  } else if(/\bissued.*capital\b|paid.?up capital|subscribed.*capital|authorized.*capital|registered.*capital|called.?up capital|ordinary share|preference share|\bshare capital\b/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches share/issued/paid-up capital → Equity');
+  } else if(/\bretained earn|\baccumulated profit|\baccumulated loss/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches retained earnings pattern → Equity');
+  } else if(/statutory reserve|legal reserve|general reserve|capital reserve|revaluation reserve/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches reserve → Other Reserves (Equity)');
+  } else if(/\bfixed deposit|\bterm deposit|\btime deposit|\bfd\b.*account|bank.*deposit(?!.*expense)/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches fixed/term deposit → Investment / Asset');
+  } else if(/\bcash in hand\b|\bcash in bank\b|petty cash|\bcash at bank\b|cash and bank|cash.*equivalent/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches cash-in-hand / cash-at-bank pattern');
+  } else if(/bank.*charge|bank.*fee|bank.*commission/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches bank charge/fee pattern → Finance Costs');
+  } else if(/\btax payable\b|income.*tax.*payable|payable.*income.*tax|zakat.*payable|wht.*payable/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" contains "tax payable" → Current Liability');
+  } else if(/\bdue from\b|intercompany.*receiv/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches due-from/intercompany → Receivable');
+  } else if(/\bdue to\b(?!.*customer)|intercompany.*pay/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches due-to/intercompany → Payable');
+  } else if(/\bgoodwill\b|\bintangible\b|\bsoftware\b(?!.*expense)|\btrademark\b|\bpatent\b/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches intangible asset pattern');
+  } else if(/investment property|real estate.*investment/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches investment property');
+  } else if(/\bsecurity deposit\b(?!.*payable)|\brefundable deposit\b/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches security/refundable deposit → Prepayments');
+  } else if(/provision.*bad debt|provision.*doubtful/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches bad debt provision → contra Receivable');
+  } else if(/\beosb\b.*provision|end.of.service.*provision|gratuity.*provision/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches EOSB / gratuity provision → NCL Employee Benefits');
+  } else if(/interest.*income(?!.*expense)|profit on deposit/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches interest/profit income → Finance Income');
+  } else if(/interest.*expense|murabaha.*cost|ijara.*cost/.test(name)){
+    lines.push('📌 Name rule: "'+a.name+'" matches interest/finance cost → Finance Costs');
+  } else {
+    var codeRanges={'1':'1xxx → Asset range','2':'2xxx → Liability range','3':'3xxx → Equity range','4':'4xxx → Revenue','5':'5xxx → Cost of Sales','6':'6xxx → Expense','7':'7xxx → Other','8':'8xxx → Finance','9':'9xxx → Tax'};
+    if(codeRanges[d1]) lines.push('📋 Code '+code+': '+codeRanges[d1]);
+    var nameHints=[
+      [/accumulated dep|accum dep/,'accumulated depreciation → netted under PPE'],
+      [/capital work in progress|cwip/,'capital WIP → Non-Current Asset'],
+      [/\bbank\b(?!.*charge|.*fee)/,'contains "bank" → treated as cash/bank'],
+      [/inventor|stock\b|finished goods|raw material/,'inventory/stock pattern → Current Asset'],
+      [/account.*receiv|trade.*receiv/,'trade receivables pattern → Current Asset'],
+      [/prepaid|advance.*to.*supplier/,'prepayment/advance pattern → Current Asset'],
+      [/\bvat\b.*receiv|input vat/,'input VAT / tax receivable → Current Asset'],
+      [/output vat|vat.*payable/,'output VAT payable → Current Liability'],
+      [/account.*payable|trade.*payable/,'trade payables pattern → Current Liability'],
+      [/^accrued|^accrual/,'accrued/accrual → Accrued Liabilities'],
+      [/salary|salaries|wage/,'salary / wage → Expense'],
+      [/depreciation|amortis/,'depreciation / amortisation → Expense'],
+      [/gosi|social insur/,'GOSI / social insurance → Expense or Liability'],
+      [/\bshare capital\b|paid.?up capital|issued.*capital|subscribed.*capital/,'share/issued/paid-up capital → Equity'],
+      [/retained earn|accumulated profit/,'retained earnings → Equity'],
+      [/\bfixed deposit\b|\bterm deposit\b|\btime deposit\b/,'fixed/term deposit → Investment/Asset'],
+      [/revenue|service.*income/,'revenue / income pattern'],
+      [/rent.*expense|office.*rent/,'rent expense pattern'],
+      [/loan.*receiv|note.*receiv/,'loan/note receivable → Non-Current Asset'],
+      [/investment property/,'investment property → Non-Current Asset'],
+      [/goodwill|intangible|trademark|patent/,'intangible asset pattern → Non-Current Asset'],
+    ];
+    var matched=false;
+    for(var i=0;i<nameHints.length;i++){if(nameHints[i][0].test(name)){lines.push('🔤 Name: '+nameHints[i][1]);matched=true;break;}}
+    if(!matched){
+      if(d2==='10') lines.push('⚠️ Code "10xx" (suspense/clearing) + no name match → fallback');
+      else lines.push('🔤 Name: no specific pattern matched → code-range default');
+    }
+  }
+
+  // Sub-code hint
+  var subHints={'11':'11xx → Non-current asset sub-range','12':'12xx → Current asset sub-range','21':'21xx → Current liability sub-range','22':'22xx/23xx → Non-current liability sub-range'};
+  if(subHints[d2]) lines.push('   '+subHints[d2]);
+
+  // Balance note
+  lines.push('💰 Balance: '+(net>=0?'Debit +'+Math.abs(net).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'Credit ('+Math.abs(net).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+')'));
+
+  // Final classification
+  var stmtLbl=m.statement==='SFP'?'Fin. Position (SFP)':'Income Statement (IS)';
+  var secLbls={NCA:'Non-Current Assets',CA:'Current Assets',E:'Equity',NCL:'Non-Current Liabilities',CL:'Current Liabilities',REV:'Revenue',COS:'Cost of Sales',DIST:'Distribution',ADMIN:'Admin Expenses',OI:'Other Income',OE:'Other Expenses',FI:'Finance Income',FC:'Finance Costs',TAX:'Tax / Zakat'};
+  lines.push('✅ → '+stmtLbl+' › '+(secLbls[m.section]||m.section)+'\n    Line item: '+m.lineItem);
+
+  return lines.join('\n');
+}
+
+function mapOne(a){
+  var code=String(a.code||''),name=(a.name||'').toLowerCase().trim(),net=a.net;
+  var d1=code[0]||'',d2=code.substring(0,2),d3=code.substring(0,3),d4=code.substring(0,4);
+
+  // ── GLOBAL NAME-PRIORITY PRE-CHECKS ──────────────────────────────────────
+  // Run BEFORE code-based routing so accounts with non-standard codes
+  // (e.g. expense or equity accounts numbered in the wrong range) are still
+  // categorised correctly by what their name actually says.
+
+  // ── EQUITY (must come first — capital words also appear in revenue/expense names)
+  if(/\bissued.*capital\b|paid.?up capital|subscribed.*capital|authorized.*capital|registered.*capital|called.?up capital|ordinary share|preference share/.test(name))
+    return SFP('E','Share Capital');
+  if(/\bshare capital\b/.test(name))
+    return SFP('E','Share Capital');
+  // Accumulated P/L, Accumulated Profit/Loss, Retained Earnings — any code
+  if(/\bretained earn|\baccumulated profit|\baccumulated loss|\baccumulated deficit|\baccumulated p[\s\/&]+l\b|^acc.*p[\s\/&]+l$|net.*profit.*b\/f|profit.*brought.*forward|loss.*brought.*forward|brought.*forward.*profit/.test(name))
+    return SFP('E','Retained Earnings');
+  // Current year profit / net income — equity not revenue
+  if(/\bprofit.*year\b|\bnet.*profit.*year\b|\bcurrent.*year.*profit\b|\bnet.*income.*year\b|\byear.*profit\b/.test(name))
+    return SFP('E','Retained Earnings');
+  if(/statutory reserve|legal reserve|general reserve|capital reserve|revaluation reserve|translation reserve|other.*reserve/.test(name))
+    return SFP('E','Other Reserves');
+  if(/partner.*account|partner.*capital|drawings|owner.*withdrawal|shareholder.*loan.*equity/.test(name)&&!/payable|liab/.test(name))
+    return SFP('E','Partner / Shareholder Accounts');
+
+  // ── FIXED / TERM DEPOSITS → Asset (short-term → CA, else NCA)
+  if(/\bfixed deposit|\bterm deposit|\btime deposit|\bfd\b.*account|bank.*deposit(?!.*expense)/.test(name)){
+    if(/short.?term|current|<\s*1\s*year|less.*than.*year/.test(name))
+      return SFP('CA','Other Current Assets');
+    return SFP('NCA','Long-term Investments');
+  }
+
+  // ── CASH AND BANK
+  if(/\bcash in hand\b|\bcash in bank\b|petty cash|\bcash at bank\b|cash and bank|cash.*equivalent/.test(name))
+    return SFP('CA','Cash and Cash Equivalents');
+
+  // ── BANK CHARGES / FEES → Finance Costs (Income Statement)
+  if(/bank.*charge|bank.*fee|bank.*commission/.test(name))
+    return IS('FC','Bank Charges and Fees');
+
+  // ── TAX / ZAKAT PAYABLES → Current Liability
+  if(/\btax payable\b|income.*tax.*payable|payable.*income.*tax|zakat.*payable|wht.*payable/.test(name))
+    return SFP('CL','VAT and Tax Payables');
+
+  // ── ACCRUED LIABILITIES (must be before code routing — accruals are often coded 3xxx or 2xxx)
+  if(/^accrued\b|^accrual\b|accrued.*expense|accrued.*liabilit|accrued.*salary|accrued.*wage|accrued.*bonus|accrued.*leave|accrued.*gosi|accrued.*audit|accrued.*rent|accrued.*interest(?!.*income)/.test(name))
+    return SFP('CL','Accrued Liabilities');
+
+  // ── PAYABLES (name wins — sometimes coded outside 2xxx)
+  if(/\btrade payable\b|\baccounts payable\b|\bsuppliers? payable\b|\bcreditors?\b(?!.*income|\s*note)/.test(name))
+    return SFP('CL','Trade and Other Payables');
+  // "Payable to [any entity/name]" — clear liability signal regardless of code
+  if(/^payable\s+to\b/.test(name))
+    return SFP('CL','Trade and Other Payables');
+  // Retention payable, amounts payable
+  if(/retention.*payable|payable.*retention|amount.*payable/.test(name))
+    return SFP('CL','Trade and Other Payables');
+
+  // ── PRIOR YEAR ADJUSTMENTS → Equity (Retained Earnings)
+  if(/prior.*year.*adjust|previous.*year.*adjust|opening.*adjust|py.*adjust/.test(name))
+    return SFP('E','Retained Earnings');
+
+  // ── DEFERRED / UNEARNED REVENUE (liability, not income — regardless of code)
+  if(/deferred revenue|unearned revenue|unearned.*income|income.*received.*advance|advance.*from customer|customer.*advance|advance.*billing/.test(name))
+    return SFP('CL','Customer Advances');
+
+  // ── DIVIDENDS PAYABLE
+  if(/dividend.*payable/.test(name))
+    return SFP('CL','Other Current Liabilities');
+
+  // ── SALARIES / WAGES PAYABLE (liability, not expense)
+  if(/salary.*payable|salaries.*payable|wages.*payable|payroll.*payable/.test(name))
+    return SFP('CL','Accrued Liabilities');
+
+  // ── GOSI / SOCIAL INSURANCE PAYABLE
+  if(/gosi.*payable|social.*insur.*payable|pension.*payable|eobi.*payable/.test(name))
+    return SFP('CL','Accrued Liabilities');
+  if(/\bdue from\b|intercompany.*receiv|intragroup.*receiv/.test(name))
+    return SFP('CA','Trade and Other Receivables');
+  if(/\bdue to\b(?!.*customer)|intercompany.*pay|intragroup.*pay/.test(name))
+    return SFP('CL','Trade and Other Payables');
+
+  // ── EMPLOYEE-RELATED ASSETS (loans / advances)
+  if(/\bstaff.*loan\b|\bemployee.*loan\b|advance.*to.*employee|advance.*to.*staff/.test(name))
+    return SFP('CA','Employee and Staff Advances');
+
+  // ── GOODWILL / INTANGIBLES (sometimes coded in 5xxx or 6xxx)
+  if(/\bgoodwill\b/.test(name))
+    return SFP('NCA','Intangible Assets');
+  if(/\bintangible\b|\bsoftware\b(?!.*expense|\bsupport\b)|\berp.*system\b|\btrademark\b|\bpatent\b/.test(name)&&!/maintenance|licen.*expense|annual.*fee/.test(name))
+    return SFP('NCA','Intangible Assets');
+
+  // ── LONG-TERM / SECURITY DEPOSITS PAID (asset, not the payable side)
+  if(/\bsecurity deposit\b(?!.*payable|\bowed\b)|\brefundable deposit\b|\btender deposit\b|\bbid bond\b/.test(name))
+    return SFP('CA','Prepayments and Deposits');
+
+  // ── INVESTMENT PROPERTY
+  if(/investment property|real estate.*investment/.test(name))
+    return SFP('NCA','Investment Property');
+
+  // ── LOAN RECEIVABLE / NOTE RECEIVABLE
+  if(/\bloan.*receiv|\bnote.*receiv|advance.*to.*director|advance.*to.*partner|advance.*to.*shareholder/.test(name))
+    return SFP('NCA','Long-term Receivables');
+
+  // ── OPENING / SUSPENSE / CLEARING (hard to classify → fallback CA)
+  if(/\bopening balance\b|\bclosing balance\b|\bsuspense\b|\bclearing\b/.test(name))
+    return SFP('CA','Other Current Assets');
+
+  // ── PROVISION FOR BAD DEBTS / DOUBTFUL → contra-asset (group under receivables)
+  if(/provision.*bad debt|provision.*doubtful|allowance.*bad debt|allowance.*doubtful/.test(name))
+    return SFP('CA','Trade and Other Receivables');
+
+  // ── EOSB / GRATUITY PROVISION (long-term employee benefit)
+  if(/\beosb\b.*provision|end.of.service.*provision|gratuity.*provision|staff.*indemnity.*provision/.test(name))
+    return SFP('NCL','Employee Benefit Provisions');
+
+  // ── ZAKAT / INCOME TAX EXPENSE (sometimes coded outside 9xxx)
+  if(/\bzakat.*expense\b|\bzakat charge\b|income tax.*expense/.test(name))
+    return IS('TAX','Zakat / Income Tax');
+
+  // ── FINANCE INCOME (interest / profit on deposits — any code)
+  if(/interest.*income(?!.*expense)|profit on deposit|return on deposit|income.*on.*deposit/.test(name))
+    return IS('FI','Finance Income');
+
+  // ── FINANCE COSTS (interest expense — any code)
+  if(/interest.*expense|interest.*on.*loan|loan.*interest|murabaha.*cost|murabaha.*expense|ijara.*cost/.test(name))
+    return IS('FC','Finance Costs');
+
+  // ── INCOME STATEMENT ──────────────────────────
+
+  if(d1==='4'){
+    if(/rental income|lease.*income(?!.*expense)/.test(name))return IS('REV','Rental Income');
+    if(/commission.*income|rebate.*income/.test(name))return IS('REV','Commission Income');
+    if(/management.*fee.*income|management.*charge.*income/.test(name))return IS('REV','Management Fee Income');
+    if(/other income|other revenue|miscellaneous income/.test(name))return IS('OI','Other Income');
+    if(/gain.*disposal|profit.*disposal|profit.*sale.*asset/.test(name))return IS('OI','Gain on Disposal of Assets');
+    if(/foreign.*exchange.*gain|fx.*gain|forex.*gain|exchange.*gain|unrealised.*gain/.test(name))return IS('OI','Foreign Exchange Gain');
+    if(/scrap|disposal.*income/.test(name))return IS('OI','Scrap Sales Income');
+    if(/dividend.*income/.test(name))return IS('FI','Dividend Income');
+    if(/interest.*income|profit.*deposit|deposit.*profit|murabaha.*income/.test(name))return IS('FI','Finance Income');
+    return IS('REV','Revenue');
+  }
+
+  if(d1==='5'){
+    if(/depreciation|amortisation/.test(name))return IS('COS','Depreciation — Cost of Sales');
+    if(/salary|salaries|wage|manpower|staff cost/.test(name))return IS('COS','Labour Costs — Cost of Sales');
+    if(/material|raw|consumable|spare part/.test(name))return IS('COS','Material Costs');
+    if(/sub.?contract|outsourc/.test(name))return IS('COS','Sub-contractor Costs');
+    if(/gosi|social insur|eobi/.test(name))return IS('COS','Employee Benefits — Cost of Sales');
+    if(/eosb.*cost|end.of.service.*cost|gratuity.*cost|terminal.*benefit.*cost/.test(name))return IS('COS','Employee Benefits — Cost of Sales');
+    if(/annual leave.*cost|leave.*cost.*ops/.test(name))return IS('COS','Employee Benefits — Cost of Sales');
+    if(/utility|electric|water/.test(name))return IS('COS','Utilities — Operations');
+    if(/rent.*ops|operational.*rent/.test(name))return IS('COS','Rent — Operations');
+    if(/travel|accommodation|hotel/.test(name))return IS('COS','Travel and Related Costs');
+    if(/consult|professional|legal/.test(name))return IS('COS','Other Cost of Sales');
+    if(/uniform|workwear/.test(name))return IS('COS','Other Cost of Sales');
+    if(/tools|equipment.*cost/.test(name))return IS('COS','Other Cost of Sales');
+    return IS('COS','Cost of Revenue');
+  }
+
+  if(d1==='6'){
+    // Tax first (specific codes)
+    if(d4==='6124'||/^zakat|^income tax expense|^zakat expense/.test(name))return IS('TAX','Zakat / Income Tax');
+    if(/deferred tax expense/.test(name))return IS('TAX','Deferred Tax Expense');
+    if(/withholding.*tax.*expense|wht.*expense/.test(name))return IS('TAX','Withholding Tax Expense');
+    // Finance costs
+    if(d4==='6117'||/bank.*fee|bank.*charge|bank.*commission/.test(name))return IS('FC','Bank Charges and Fees');
+    if(/interest.*expense|interest.*on.*loan|loan.*interest|murabaha.*cost|murabaha.*expense|ijara.*cost/.test(name))return IS('FC','Finance Costs');
+    if(/late.*payment.*penalty|penalty.*finance/.test(name))return IS('FC','Late Payment Penalties');
+    // Distribution
+    if(/selling|distribution|marketing|advertising|promo|exhibition|showroom/.test(name))return IS('DIST','Distribution and Selling Expenses');
+    if(/freight|delivery.*expense|shipping.*expense/.test(name))return IS('DIST','Freight and Delivery Costs');
+    if(/sales.*commission/.test(name))return IS('DIST','Sales Commissions');
+    // Admin — salaries and people
+    if(/salary|salaries|wage|staff.*cost/.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+    if(/gosi|social insur|eobi|provident fund/.test(name))return IS('ADMIN','Social Insurance and GOSI');
+    if(/eosb|end.of.service|gratuity|terminal.*benefit|staff.*indemnity/.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+    if(/annual leave.*expense|leave.*accrual.*expense|vacation.*expense/.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+    if(/housing allowance|accommodation.*expense|staff.*housing/.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+    if(/mobile.*allowance|phone.*allowance|transport.*allowance/.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+    // HR and government
+    if(/iqama|residence.*permit|work.*permit|exit.*re.entry|visa.*expense|visit.*visa/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/\bmol\b|\bhrsd\b|\bmlsd\b|ministry.*labour|ministry.*hr|government.*charge|government.*fee/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/\bpro\b.*expense|public.*relation.*officer|government.*relation/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/municipality.*fee|chamber.*commerce|commercial.*reg|cr.*renewal|coc.*fee/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/attestation|notari|apostille|legali/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/recruitment|headhunt|hiring.*cost/.test(name))return IS('ADMIN','HR and Government Fees');
+    if(/medical.*insurance|health.*insurance|group.*medical|life.*insurance.*staff/.test(name))return IS('ADMIN','Insurance Expenses');
+    if(/workers.*comp|workmen.*comp|employer.*liability|vehicle.*insurance/.test(name))return IS('ADMIN','Insurance Expenses');
+    if(/general.*insurance|insurance.*expense(?!.*vat)/.test(name))return IS('ADMIN','Insurance Expenses');
+    // Professional
+    if(/audit.*fee|external.*audit|statutory.*audit/.test(name))return IS('ADMIN','Professional and Consultancy Fees');
+    if(/legal.*fee|legal.*expense|solicitor|barrister/.test(name))return IS('ADMIN','Professional and Consultancy Fees');
+    if(/consult|professional.*fee/.test(name))return IS('ADMIN','Professional and Consultancy Fees');
+    if(/director.*fee|board.*fee|advisory.*fee/.test(name))return IS('ADMIN','Professional and Consultancy Fees');
+    // Utilities and tech
+    if(/utility|electric|water.*bill|district.*cooling/.test(name))return IS('ADMIN','Utilities and Technology');
+    if(/internet|erp|telecom|telephone|mobile.*bill|phone.*bill|it.*service|helpdesk|server|hosting|cloud|saas/.test(name))return IS('ADMIN','Utilities and Technology');
+    // Rent
+    if(/rent.*expense|operating.*lease.*expense|office.*rent/.test(name))return IS('ADMIN','Rent Expenses');
+    // Vehicle
+    if(/car.*rental|vehicle.*expense|fuel|petrol|fleet/.test(name))return IS('ADMIN','Vehicle and Transportation Expenses');
+    // Travel
+    if(/travel|accommodation|hotel|flight|airfare|per.*diem/.test(name))return IS('ADMIN','Travel and Accommodation');
+    // Maintenance
+    if(/maintenance|repair|cleaning|housekeeping|janitorial|pest control/.test(name))return IS('ADMIN','Maintenance and Repairs');
+    if(/security.*expense|guard.*expense/.test(name))return IS('ADMIN','Maintenance and Repairs');
+    // Office admin
+    if(/office.*expense|stationery|printing|photocopy|postage|courier/.test(name))return IS('ADMIN','Office and Administrative Expenses');
+    if(/uniform(?!.*cost)/.test(name))return IS('ADMIN','Office and Administrative Expenses');
+    if(/training|workshop|seminar.*expense|course.*fee/.test(name))return IS('ADMIN','Office and Administrative Expenses');
+    if(/subscription|membership|association.*fee/.test(name))return IS('ADMIN','Office and Administrative Expenses');
+    if(/entertainment|hospitality|gift(?!.*card)/.test(name))return IS('ADMIN','Office and Administrative Expenses');
+    // Depreciation admin
+    if(/depreciation.*admin|admin.*depreciation|amortisation/.test(name))return IS('ADMIN','Depreciation — Admin');
+    if(/depreciation/.test(name))return IS('ADMIN','Depreciation — Admin');
+    // Tax
+    if(/zakat|tax.*expense/.test(name))return IS('TAX','Zakat / Income Tax');
+    return IS('ADMIN','General and Administrative Expenses');
+  }
+
+  if(d1==='7'){
+    if(/selling|marketing|distribution|advertising/.test(name))return IS('DIST','Distribution and Selling Expenses');
+    if(/interest.*expense|finance.*cost|bank.*charge/.test(name))return IS('FC','Finance Costs');
+    if(/other income|gain|rental income/.test(name))return IS('OI','Other Income');
+    if(/gain.*disposal/.test(name))return IS('OI','Gain on Disposal of Assets');
+    if(/loss.*disposal/.test(name))return IS('OE','Loss on Disposal of Assets');
+    if(/bad debt|impairment|write.off/.test(name))return IS('OE','Bad Debt Expense');
+    if(/foreign.*exchange.*loss|fx.*loss|forex.*loss/.test(name))return IS('OE','Foreign Exchange Loss');
+    if(/foreign.*exchange.*gain|fx.*gain|forex.*gain/.test(name))return IS('OI','Foreign Exchange Gain');
+    return IS('OE','Other Expenses');
+  }
+
+  if(d1==='8'){
+    if(/income|gain|interest income|profit.*deposit|murabaha.*income|dividend.*income/.test(name))return IS('FI','Finance Income');
+    if(/cost|charge|expense|interest.*expense|murabaha.*cost/.test(name))return IS('FC','Finance Costs');
+    return net<0?IS('FI','Finance Income'):IS('FC','Finance Costs');
+  }
+
+  if(d1==='9'){
+    // Deferred / unearned items coded 9xxx → liability
+    if(/unearned|deferred.*revenue|deferred.*income|income.*advance|advance.*billing/.test(name))return SFP('CL','Customer Advances');
+    // Prior year / opening adjustments → equity
+    if(/prior.*year|previous.*year|opening.*adjust|py.*adjust/.test(name))return SFP('E','Retained Earnings');
+    // Accumulated P/L coded 9xxx → equity
+    if(/accumulated.*p.*l|accumulated profit|accumulated loss|retained earn/.test(name))return SFP('E','Retained Earnings');
+    // Suspense / clearing coded 9xxx
+    if(/suspense|clearing|intercompany|due to|due from/.test(name))return SFP('CA','Other Current Assets');
+    // Income / revenue accounts coded 9xxx
+    if(/income(?!.*tax)|revenue|rental income|rental.*earn/.test(name))return SFP('CL','Customer Advances');
+    // Otherwise it really is tax / zakat
+    return IS('TAX','Zakat / Income Tax');
+  }
+
+  // ── BALANCE SHEET ─────────────────────────────
+
+  if(d1==='1'){
+    // Suspense/clearing
+    if(d2==='10')return SFP('CA','Other Current Assets');
+
+    // Non-current assets (11x)
+    if(d2==='11'){
+      if(/accumulated dep|accum dep|accumulated amort|accum amort|provision.*depreciation/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/capital work in progress|cwip|asset.*under construction|work.*in.*progress.*capital/.test(name))return SFP('NCA','Capital Work in Progress');
+      if(/goodwill/.test(name))return SFP('NCA','Intangible Assets');
+      if(/intangible|software|erp.*system|it.*system|patent|trademark|licence|copyright/.test(name))return SFP('NCA','Intangible Assets');
+      if(/right.of.use|rou.*asset|lease.*asset/.test(name))return SFP('NCA','Right-of-Use Assets');
+      if(/investment property/.test(name))return SFP('NCA','Investment Property');
+      if(/land|building|leasehold.*improvement|fit.?out/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/vehicle|motor car|lorry|truck|bus/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/machinery|equipment|plant|generator|compressor/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/furniture|fixture|office.*equipment|computer|printer/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/tool|small.*equipment/.test(name))return SFP('NCA','Property, Plant and Equipment');
+      return SFP('NCA','Property, Plant and Equipment');
+    }
+
+    // Cash and bank (121)
+    if(d3==='121'||/\bbank\b(?!.*guarantee)|petty cash|cash in hand|cash and bank|cash.*equivalent|\bcard\b/.test(name))return SFP('CA','Cash and Cash Equivalents');
+
+    // Inventory (122)
+    if(d3==='122'||/inventor|stock\b|finished goods|raw material|merchandise|consumable.*inventory|\bwip\b|work.*in.*progress(?!.*capital)/.test(name))return SFP('CA','Inventories');
+
+    // Trade receivables (123)
+    if(d3==='123'||/account.*receiv|trade.*receiv|retention.*receiv|insurance.*claim.*receiv|related.*party.*receiv|due from.*related/.test(name))return SFP('CA','Trade and Other Receivables');
+    if(/customer(?!.*deposit|.*advance)/.test(name)&&d1==='1')return SFP('CA','Trade and Other Receivables');
+
+    // Prepayments / deposits (124-126)
+    if(d3==='124'||d3==='125'||/prepaid|advance.*to.*supplier|advance.*payment(?!.*customer)|supplier.*advance/.test(name))return SFP('CA','Prepayments and Deposits');
+    if(d3==='126'||/refundable deposit|security deposit|retention.*deposit|tender.*deposit|bid.*bond|guarantee.*deposit|caution deposit/.test(name))return SFP('CA','Prepayments and Deposits');
+
+    // VAT / tax receivable (127)
+    if(d3==='127'||/\bvat\b.*receiv|input vat|vat recovery|vat.*refund|tax receiv|deferred vat|zatca.*receiv/.test(name))return SFP('CA','VAT and Tax Receivables');
+
+    // Employee advances
+    if(/employee.*advance|staff.*advance|advance.*to.*employee|staff.*loan|advance.*staff/.test(name))return SFP('CA','Employee and Staff Advances');
+
+    // Intercompany / related party (128-129, 13x)
+    if(d3==='128'||d3==='129'||/intercompany.*receiv|due from|intragroup.*receiv/.test(name))return SFP('CA','Trade and Other Receivables');
+    if(d2==='13'){
+      if(/long.?term|non.?current/.test(name))return SFP('NCA','Long-term Receivables');
+      return SFP('CA','Trade and Other Receivables');
+    }
+
+    // Other specific CA
+    if(/letter of credit|documentary credit|import.*bond/.test(name))return SFP('CA','Other Current Assets');
+    if(/import.*duty(?!.*expense)|customs.*duty(?!.*expense)/.test(name))return SFP('CA','Other Current Assets');
+    if(/insurance.*claim(?!.*expense)/.test(name))return SFP('CA','Trade and Other Receivables');
+
+    // Long-term non-current
+    if(/long.?term.*invest|investment.*subsidiary|investment.*associate|investment.*equity/.test(name))return SFP('NCA','Long-term Investments');
+    if(/deferred.*tax.*asset|tax.*asset/.test(name))return SFP('NCA','Deferred Tax Asset');
+
+    if(/investment|long.?term|non.?current/.test(name))return SFP('NCA','Long-term Investments');
+    return SFP('CA','Other Current Assets');
+  }
+
+  if(d1==='2'){
+    if(d2==='21'){
+      // Trade payables
+      if(d3==='211'||/account.*payable|trade.*payable|\bsupplier\b|\bcreditor\b|retention.*payable|related.*party.*payable|due to.*related/.test(name))return SFP('CL','Trade and Other Payables');
+      // Accruals
+      if(d3==='212'||/^accrued|^accrual/.test(name))return SFP('CL','Accrued Liabilities');
+      if(/annual leave.*payable|leave.*payable|vacation.*payable|eosb.*current|end.of.service.*current/.test(name))return SFP('CL','Accrued Liabilities');
+      if(/gosi.*payable|social.*insur.*payable|pension.*payable/.test(name))return SFP('CL','Accrued Liabilities');
+      // Customer advances / deferred revenue
+      if(d3==='213'||/customer.*advance|advance.*from.*customer|unearned.*revenue|deferred.*revenue/.test(name))return SFP('CL','Customer Advances');
+      // VAT / tax payables
+      if(d3==='214'||/output vat|vat.*payable|^vat$|accrual.*vat|accrual.*wht|withholding.*payable|zakat.*payable|accrual.*zakat|zatca.*payable|wht.*payable/.test(name))return SFP('CL','VAT and Tax Payables');
+      // Other current
+      if(d3==='215'||/dividend.*payable/.test(name))return SFP('CL','Other Current Liabilities');
+      if(/performance.*bond.*payable|bank.*guarantee.*payable/.test(name))return SFP('CL','Other Current Liabilities');
+      if(/warranty.*provision/.test(name))return SFP('CL','Other Current Liabilities');
+      // Partner / shareholder
+      if(d3==='216'||/partner.*account|partner.*current|drawings|shareholder.*loan|director.*loan|owner.*account/.test(name))return SFP('CL','Partner / Shareholder Accounts');
+      // Short-term borrowings
+      if(/overdraft|\bbank.*od\b|short.?term.*loan|murabaha.*current|current.*murabaha|revolving.*credit/.test(name))return SFP('CL','Short-term Borrowings');
+      // Intercompany payable
+      if(/intercompany.*payable|due to.*inter|intragroup.*payable/.test(name))return SFP('CL','Trade and Other Payables');
+      return SFP('CL','Other Current Liabilities');
+    }
+    if(d2==='22'||d2==='23'||d2==='24'||d2==='25'){
+      if(/murabaha(?!.*current)|term.*loan|long.?term.*loan|long.?term.*borrow|sukuk|islamic.*finance|syndicated.*loan/.test(name))return SFP('NCL','Long-term Borrowings');
+      if(/ijara.*liab|lease.*liab|rou.*liab|right.of.use.*liab/.test(name))return SFP('NCL','Lease Liabilities');
+      if(/deferred.*tax.*liab/.test(name))return SFP('NCL','Deferred Tax Liability');
+      if(/eosb.*provision|end.of.service.*provision|gratuity.*provision|staff.*indemnity.*provision|terminal.*benefit.*provision/.test(name))return SFP('NCL','Employee Benefit Provisions');
+      if(/current/.test(name))return SFP('CL','Other Current Liabilities');
+      return SFP('NCL','Other Non-Current Liabilities');
+    }
+    if(/intercompany.*pay|due to|intragroup/.test(name))return SFP('CL','Trade and Other Payables');
+    return SFP('CL','Other Current Liabilities');
+  }
+
+  if(d1==='3'){
+    if(d3==='321'||/share capital|paid.?up capital|authorized capital|issued capital|subscribed capital/.test(name))return SFP('E','Share Capital');
+    if(/donated capital|capital contribution/.test(name))return SFP('E','Share Capital');
+    if(d3==='311'||/retained earn|retained profit|accumulated loss|accumulated deficit/.test(name))return SFP('E','Retained Earnings');
+    if(/profit.*year|net.*income.*current|current.*year.*profit/.test(name))return SFP('E','Retained Earnings');
+    if(/statutory reserve|legal reserve|general reserve|mandatory reserve/.test(name))return SFP('E','Other Reserves');
+    if(/revaluation|other comprehensive|fair value reserve|translation reserve|treasury share/.test(name))return SFP('E','Other Reserves');
+    if(/capital/.test(name))return SFP('E','Share Capital');
+    return SFP('E','Retained Earnings');
+  }
+
+  return net>0?SFP('CA','Other Current Assets'):SFP('CL','Other Current Liabilities');
+}
+function SFP(s,l){return{statement:'SFP',section:s,lineItem:l};}
+function IS(s,l){return{statement:'IS',section:s,lineItem:l};}
+
+// ═══════════════════════════════════════════════
+// MAPPING REVIEW PANEL
+// ═══════════════════════════════════════════════
+function showMappingTab(){
+  document.getElementById('tabsBar').style.display='flex';
+  renderMappingPanel();
+  swById('mr','tab-mr');
+}
+
+function getEffectiveMapping(code,idx){return effMap(code,idx).m;}  // backwards compat
+
+function renderMappingPanel(){
+  var accounts=APP.tb.accounts,ovCount=Object.keys(APP.overrides).length;
+  var hasPY=!!APP.tbPrior;
+  var learnedCount=Object.keys(APP.learnedMappings).length;
+  var oc=document.getElementById('ovCnt');
+  if(ovCount>0){oc.style.display='inline';oc.textContent=ovCount;}else{oc.style.display='none';}
+
+  var sectionOpts='<option value="">All Sections</option>'+Object.keys(SEC_LABELS).map(function(k){return'<option value="'+k+'">'+SEC_LABELS[k]+'</option>';}).join('');
+
+  var rows='';
+  accounts.forEach(function(a,i){
+    var em=effMap(a.code,i);
+    var m=em.m,src=em.src;
+    var isOv=(src==='MANUAL'),isLearned=(src==='LEARNED'),isSaved=(src==='SAVED');
+    var rowCls='mr-row'+(isOv?' ov-row':isLearned?' learned-row':isSaved?' saved-row':'');
+    var bal=a.net;
+    var balStr=Math.abs(bal).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    var balClass=bal>=0?'dr':'cr';
+    var balLabel=bal>=0?'+'+balStr:'('+balStr+')';
+    var stmtOpts=['SFP','IS'].map(function(s){return'<option value="'+s+'"'+(m.statement===s?' selected':'')+'>'+s+'</option>';}).join('');
+    var secOpts=Object.keys(T[m.statement]).map(function(s){return'<option value="'+s+'"'+(m.section===s?' selected':'')+'>'+T[m.statement][s].lbl+'</option>';}).join('');
+    var liOpts=(T[m.statement][m.section]?T[m.statement][m.section].items:[]).map(function(li){return'<option value="'+esc(li)+'"'+(m.lineItem===li?' selected':'')+'>'+esc(li)+'</option>';}).join('');
+    // Prior year column
+    var pyCol='';
+    if(hasPY){
+      var pyM=APP.learnedMappings[a.code];
+      if(pyM){
+        var shortLI=pyM.lineItem.length>22?pyM.lineItem.substring(0,20)+'…':pyM.lineItem;
+        var sameAsNow=(pyM.statement===m.statement&&pyM.section===m.section&&pyM.lineItem===m.lineItem);
+        pyCol='<td class="td-py"><span class="py-pill '+(sameAsNow?'match':'diff')+'" title="'+esc(pyM.statement+' › '+T[pyM.statement][pyM.section].lbl+' › '+pyM.lineItem)+'">'+esc(shortLI)+'</span></td>';
+      }else{
+        pyCol='<td class="td-py"><span style="color:var(--tx3);font-size:10px">—</span></td>';
+      }
+    }
+    var autoReason=(!isOv&&!isLearned&&!isSaved&&m.reason)?m.reason:'';
+    var statusCell=isOv
+      ?'<button class="btn-reset-row" onclick="resetRow(this)" title="Reset to saved/auto">↺</button>'
+      :isLearned
+        ?'<span class="learned-badge">LEARNED</span>'
+        :isSaved
+          ?'<span class="saved-badge" title="Matched from your saved rules">SAVED</span>'
+          :'<span class="auto-badge"'+(autoReason?' data-tip="'+esc(autoReason)+'"':'')+'>AUTO</span>';
+    rows+='<tr class="'+rowCls+'" data-code="'+esc(a.code)+'" data-idx="'+i+'" data-sec="'+m.section+'">'+
+      '<td class="td-code">'+esc(a.code)+'</td>'+
+      '<td class="td-name" title="'+esc(a.name)+'">'+esc(a.name.length>38?a.name.substring(0,36)+'…':a.name)+'</td>'+
+      '<td class="td-bal '+balClass+'">'+balLabel+'</td>'+
+      (hasPY?pyCol:'')+
+      '<td class="td-sel"><select class="mr-sel stmt-sel" onchange="onStmt(this)">'+stmtOpts+'</select></td>'+
+      '<td class="td-sel"><select class="mr-sel sec-sel" onchange="onSec(this)">'+secOpts+'</select></td>'+
+      '<td class="td-lisel"><select class="mr-sel li-sel" onchange="onLi(this)">'+liOpts+'</select></td>'+
+      '<td class="td-act">'+statusCell+'</td>'+
+    '</tr>';
+  });
+
+  var pyInfo=hasPY?(' &nbsp;|&nbsp; <b>'+learnedCount+' learned from PY</b>'):'';
+
+  // Build validation warnings
+  var revCount=0,isCount=0;
+  accounts.forEach(function(a,i){var em=effMap(a.code,i);if(em.m.statement==='IS'){isCount++;if(em.m.section==='REV')revCount++;}});
+  var warnings='';
+  if(isCount>0&&revCount===0){
+    warnings+='<div style="margin-bottom:12px;padding:11px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;font-size:12px;font-family:sans-serif;color:#991B1B">'+
+      '<b>⚠ No accounts mapped to Revenue.</b> You have '+isCount+' income statement account'+(isCount===1?'':'s')+' but none in the Revenue section. '+
+      'Your P&L will show expenses with no revenue — check that income accounts are mapped to <b>IS → Revenue</b>.</div>';
+  }
+  var signWarnings=[];
+  accounts.forEach(function(a,i){
+    var em=effMap(a.code,i);var m=em.m;
+    if(m.statement==='IS'){
+      if(['REV','OI','FI'].indexOf(m.section)>=0&&a.net>0)
+        signWarnings.push('"'+a.name+'" → '+m.section+' but has a debit balance (possible misclassified expense or contra-revenue)');
+      if(['COS','DIST','ADMIN','OE','FC','TAX'].indexOf(m.section)>=0&&a.net<0)
+        signWarnings.push('"'+a.name+'" → '+m.section+' (expense) but has a credit balance (possible income or provision)');
+    }
+  });
+  if(signWarnings.length){
+    warnings+='<div style="margin-bottom:12px;padding:11px 14px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12px;font-family:sans-serif;color:#92400E">'+
+      '<b>⚠ '+signWarnings.length+' sign anomaly'+(signWarnings.length===1?'':'s')+' detected</b> — accounts mapped to a section but carrying the opposite sign:<ul style="margin:5px 0 0 16px">'+
+      signWarnings.slice(0,6).map(function(w){return'<li>'+esc(w)+'</li>';}).join('')+
+      (signWarnings.length>6?'<li style="color:#78716c">…and '+(signWarnings.length-6)+' more</li>':'')+
+      '</ul></div>';
+  }
+
+  var savedCount=lsCount();
+  var savedInfo=savedCount?' &nbsp;|&nbsp; <b style="color:#A78BFA">'+savedCount+' saved rule'+(savedCount===1?'':'s')+'</b>':'';
+
+  var html='<div class="mr-panel">'+
+    '<div class="mr-genbar">'+
+      '<p>Overrides in <b style="color:var(--gd2)">gold</b>, PY-learned in <b style="color:#6EE7B7">green</b>, your saved rules in <b style="color:#A78BFA">purple</b>.'+pyInfo+savedInfo+'</p>'+
+      '<button class="btn-rules" id="rulesBtn" onclick="showRulesManager()">📚 Rules <span id="rulesCnt">'+savedCount+'</span></button>'+
+      '<button class="btn-reset-all" onclick="resetAllOv()">↺ Reset All</button>'+
+      '<button class="btn-gen-mr" onclick="gen()">Generate Statements ▶</button>'+
+    '</div>'+
+    (warnings?'<div style="padding:0 2px">'+warnings+'</div>':'')+
+    '<div class="mr-toolbar">'+
+      '<input class="mr-search" type="search" placeholder="🔍 Search code or name…" oninput="filterMR(this.value,document.getElementById(\'mrFlt\').value)">'+
+      '<select class="mr-flt" id="mrFlt" onchange="filterMR(document.querySelector(\'.mr-search\').value,this.value)">'+sectionOpts+'</select>'+
+      '<span class="mr-count" id="mrCount">'+accounts.length+' accounts</span>'+
+    '</div>'+
+    '<div class="mr-wrap"><table class="mr-tbl">'+
+      '<thead><tr>'+
+        '<th>Code</th><th>Account Name</th><th style="text-align:right">Balance</th>'+
+        (hasPY?'<th>Prior Year Treatment</th>':'')+
+        '<th>Statement</th><th>Section</th><th>Line Item</th><th style="text-align:center">Status</th>'+
+      '</tr></thead>'+
+      '<tbody id="mrBody">'+rows+'</tbody>'+
+    '</table></div></div>';
+
+  var pane=document.getElementById('p-mr');
+  if(!pane){
+    var wrap=document.getElementById('mb');
+    wrap.innerHTML='<div class="wrap" id="stmtWrap">'+
+      '<div class="tp" id="p-mr"></div>'+
+      '<div class="tp" id="p-sfp"></div>'+
+      '<div class="tp" id="p-pl"></div>'+
+      '<div class="tp" id="p-eq"></div>'+
+      '<div class="tp" id="p-nt"></div>'+
+    '</div>';
+  }
+  document.getElementById('p-mr').innerHTML=html;
+}
+
+function filterMR(q,sec){
+  var rows=document.querySelectorAll('#mrBody .mr-row');
+  var ql=q.toLowerCase(),cnt=0;
+  rows.forEach(function(tr){
+    var code=tr.dataset.code||'',name=(tr.querySelector('.td-name')||{}).title||'';
+    var matchQ=!ql||code.toLowerCase().includes(ql)||name.toLowerCase().includes(ql);
+    var matchS=!sec||tr.dataset.sec===sec;
+    var hide=!matchQ||!matchS;
+    tr.classList.toggle('hidden-row',hide);
+    if(!hide)cnt++;
+  });
+  var el=document.getElementById('mrCount');if(el)el.textContent=cnt+' account'+(cnt===1?'':'s');
+}
+
+// Cascade: Statement changed
+function onStmt(sel){
+  var tr=sel.closest('tr');
+  var code=tr.dataset.code,stmt=sel.value;
+  var secs=Object.keys(T[stmt]),sec=secs[0];
+  var secSel=tr.querySelector('.sec-sel');
+  secSel.innerHTML=secs.map(function(s){return'<option value="'+s+'">'+T[stmt][s].lbl+'</option>';}).join('');
+  secSel.value=sec;
+  var items=T[stmt][sec].items,li=items[0];
+  var liSel=tr.querySelector('.li-sel');
+  liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
+  liSel.value=li;
+  saveOv(tr,code,stmt,sec,li);
+}
+// Cascade: Section changed
+function onSec(sel){
+  var tr=sel.closest('tr');
+  var code=tr.dataset.code;
+  var stmtSel=tr.querySelector('.stmt-sel'),stmt=stmtSel.value,sec=sel.value;
+  var items=T[stmt][sec]?T[stmt][sec].items:[],li=items[0]||'';
+  var liSel=tr.querySelector('.li-sel');
+  liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
+  liSel.value=li;
+  saveOv(tr,code,stmt,sec,li);
+}
+// Line item changed
+function onLi(sel){
+  var tr=sel.closest('tr');
+  var code=tr.dataset.code;
+  var stmt=tr.querySelector('.stmt-sel').value,sec=tr.querySelector('.sec-sel').value,li=sel.value;
+  saveOv(tr,code,stmt,sec,li);
+}
+
+function saveOv(tr,code,stmt,sec,li){
+  var idx=parseInt(tr.dataset.idx);
+  var auto=APP.mappings[idx];
+  var learned=APP.learnedMappings[code];
+  var baseline=learned||auto;
+  var accountName=(APP.tb&&APP.tb.accounts[idx])?APP.tb.accounts[idx].name:'';
+  if(baseline&&baseline.statement===stmt&&baseline.section===sec&&baseline.lineItem===li){
+    delete APP.overrides[code];
+    tr.classList.remove('ov-row');
+    // Check stored rule
+    var stored=accountName?lsFindRule(accountName):null;
+    var isl=!!learned,isSaved=!isl&&!!stored;
+    tr.classList.toggle('learned-row',isl);
+    tr.classList.toggle('saved-row',isSaved);
+    var act=tr.querySelector('.td-act');
+    if(act){
+      var autoMap=APP.mappings[idx];
+      var aTip=(!isl&&!isSaved&&autoMap&&autoMap.reason)?' data-tip="'+esc(autoMap.reason)+'"':'';
+      act.innerHTML=isl?'<span class="learned-badge">LEARNED</span>':isSaved?'<span class="saved-badge" title="Matched from your saved rules">SAVED</span>':'<span class="auto-badge"'+aTip+'>AUTO</span>';
+    }
+  }else{
+    APP.overrides[code]={statement:stmt,section:sec,lineItem:li};
+    // ── AUTO-SAVE TO LOCALSTORAGE ──
+    if(accountName){
+      lsSaveRule(accountName,{statement:stmt,section:sec,lineItem:li});
+      updateRulesCount();
+    }
+    tr.classList.add('ov-row');tr.classList.remove('learned-row','saved-row');
+    tr.dataset.sec=sec;
+    var act=tr.querySelector('.td-act');
+    if(act)act.innerHTML='<button class="btn-reset-row" onclick="resetRow(this)" title="Reset to saved/auto">↺</button>';
+  }
+  updateOvCount();
+}
+
+function resetRow(btn){
+  var tr=btn.closest('tr');
+  var code=tr.dataset.code,idx=parseInt(tr.dataset.idx);
+  delete APP.overrides[code];
+  var learned=APP.learnedMappings[code];
+  var restore=learned||APP.mappings[idx];
+  if(restore){
+    var stmtSel=tr.querySelector('.stmt-sel');stmtSel.value=restore.statement;
+    var secs=Object.keys(T[restore.statement]);
+    var secSel=tr.querySelector('.sec-sel');
+    secSel.innerHTML=secs.map(function(s){return'<option value="'+s+'">'+T[restore.statement][s].lbl+'</option>';}).join('');
+    secSel.value=restore.section;
+    var items=T[restore.statement][restore.section]?T[restore.statement][restore.section].items:[];
+    var liSel=tr.querySelector('.li-sel');
+    liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
+    liSel.value=restore.lineItem;
+    tr.dataset.sec=restore.section;
+  }
+  tr.classList.remove('ov-row');
+  var learned=APP.learnedMappings[code];
+  var accountName=(APP.tb&&APP.tb.accounts[idx])?APP.tb.accounts[idx].name:'';
+  var stored=!learned&&accountName?lsFindRule(accountName):null;
+  tr.classList.toggle('learned-row',!!learned);
+  tr.classList.toggle('saved-row',!learned&&!!stored);
+  var act=tr.querySelector('.td-act');
+  if(act){var autoMap=APP.mappings[idx];var aTip=(!learned&&!stored&&autoMap&&autoMap.reason)?' data-tip="'+esc(autoMap.reason)+'"':'';act.innerHTML=learned?'<span class="learned-badge">LEARNED</span>':stored?'<span class="saved-badge" title="Matched from your saved rules">SAVED</span>':'<span class="auto-badge"'+aTip+'>AUTO</span>';}
+  updateOvCount();
+}
+
+function resetAllOv(){
+  APP.overrides={};
+  renderMappingPanel();
+  swById('mr','tab-mr');
+}
+
+function updateOvCount(){
+  var n=Object.keys(APP.overrides).length,lc=Object.keys(APP.learnedMappings).length;
+  var el=document.getElementById('ovCnt');
+  if(el){if(n>0){el.style.display='inline';el.textContent=n;}else{el.style.display='none';}}
+  var bar=document.querySelector('.mr-genbar p');
+  if(bar){var pyInfo=lc?' &nbsp;|&nbsp; <b>'+lc+' learned from PY</b>':'';var sc=lsCount();var si=sc?' &nbsp;|&nbsp; <b style="color:#A78BFA">'+sc+' saved rule'+(sc===1?'':'s')+'</b>':'';bar.innerHTML='Overrides in <b style="color:var(--gd2)">gold</b>, PY-learned in <b style="color:#6EE7B7">green</b>, your saved rules in <b style="color:#A78BFA">purple</b>. <b>'+n+' manual override'+(n===1?'':'s')+'</b> applied.'+pyInfo+si;}
+  updateRulesCount();
+}
+
+function updateRulesCount(){
+  var c=lsCount();
+  var el=document.getElementById('rulesCnt');if(el)el.textContent=c;
+}
+
+// ═══════════════════════════════════════════════
+// RULES MANAGER
+// ═══════════════════════════════════════════════
+function showRulesManager(){
+  var rules=lsLoad(),keys=Object.keys(rules).sort();
+  var secLbls={NCA:'Non-Current Assets',CA:'Current Assets',E:'Equity',NCL:'Non-Current Liabilities',CL:'Current Liabilities',REV:'Revenue',COS:'Cost of Sales',DIST:'Distribution',ADMIN:'Admin Expenses',OI:'Other Income',OE:'Other Expenses',FI:'Finance Income',FC:'Finance Costs',TAX:'Tax / Zakat'};
+
+  var rows=keys.length?keys.map(function(k){
+    var r=rules[k];
+    // Build history pills
+    var hist=(r.history||[]).slice().sort(function(a,b){return b.count-a.count;});
+    var histHtml=hist.map(function(h){
+      var isWinner=(h.statement===r.statement&&h.section===r.section&&h.lineItem===r.lineItem);
+      var isLatest=(h.statement===r.latestStatement&&h.section===r.latestSection&&h.lineItem===r.latestLineItem);
+      return'<span style="display:inline-flex;align-items:center;gap:3px;margin:1px 2px 1px 0;padding:2px 6px;border-radius:4px;font-size:10px;font-family:sans-serif;'+(isWinner?'background:#EDE9FE;color:#6D28D9;font-weight:700;border:1px solid #C4B5FD':'background:var(--sf2);color:var(--tx3);border:1px solid var(--bd)')+'">'+(isWinner?'✅ ':'')+(isLatest&&!isWinner?'🕐 ':'')+esc(h.lineItem)+' <b>×'+h.count+'</b></span>';
+    }).join('');
+    // Pin toggle
+    var pinned=!!r.pinToLatest;
+    var pinBtn='<button onclick="togglePin(\''+esc(k)+'\')" style="padding:3px 8px;border-radius:5px;font-size:10px;cursor:pointer;font-family:sans-serif;border:1px solid '+(pinned?'#6D28D9':'var(--bd2)')+';background:'+(pinned?'#EDE9FE':'var(--sf)')+';color:'+(pinned?'#6D28D9':'var(--tx3)')+';" title="'+(pinned?'Currently: Last correction always wins':'Currently: Most frequent wins')+'">'+(pinned?'📌 Last wins':'🗳 Most frequent')+'</button>';
+    return'<tr>'+
+      '<td><b style="font-size:12px">'+esc(r.originalName||k)+'</b><br><span style="font-size:10px;color:var(--tx3);font-family:sans-serif">'+r.count+' correction'+(r.count===1?'':'s')+' · last: '+esc(r.savedAt||'')+'</span></td>'+
+      '<td>'+histHtml+'</td>'+
+      '<td>'+pinBtn+'</td>'+
+      '<td><button class="del-rule" onclick="delRule(\''+esc(k)+'\')">✕</button></td>'+
+    '</tr>';
+  }).join(''):'<tr><td colspan="4"><div class="rules-empty">📭 No saved rules yet.<br><span style="font-size:12px">Every time you manually correct a mapping, it\'s saved here automatically.</span></div></td></tr>';
+
+  var html='<div class="rules-modal-bg" id="rulesBg" onclick="closeRulesIfBg(event)">'+
+    '<div class="rules-modal">'+
+      '<div class="rules-modal-hd">'+
+        '<div style="flex:1"><h3>📚 Saved Mapping Rules</h3><p>'+keys.length+' rule'+(keys.length===1?'':'s')+' · ✅ = active mapping · 🕐 = last used · 🗳 most-frequent wins by default · 📌 pin to force last-wins</p></div>'+
+        '<button onclick="closeRules()" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;border-radius:6px;padding:2px 8px">✕</button>'+
+      '</div>'+
+      '<div class="rules-modal-acts">'+
+        '<button class="btn-exp" onclick="exportRules()">⬇ Export Rules (JSON)</button>'+
+        '<button class="btn-imp" onclick="document.getElementById(\'ruleFileIn\').click()">⬆ Import Rules (JSON)</button>'+
+        '<input type="file" id="ruleFileIn" accept=".json" style="display:none" onchange="importRules(this)">'+
+        (keys.length?'<button class="btn-clr" onclick="clearAllRules()">🗑 Clear All</button>':'')+
+        '<span style="margin-left:auto;font-size:11px;color:var(--tx3);font-family:sans-serif;align-self:center">Saved in Supabase database · Export to back up or share</span>'+
+      '</div>'+
+      '<div class="rules-modal-body">'+
+        '<table><thead><tr><th style="width:22%">Account Name</th><th>Correction History</th><th style="width:145px">Mode</th><th style="width:50px"></th></tr></thead>'+
+        '<tbody>'+rows+'</tbody></table>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+  var d=document.createElement('div');d.id='rulesOverlay';d.innerHTML=html;document.body.appendChild(d);
+}
+
+function closeRules(){var el=document.getElementById('rulesOverlay');if(el)el.remove();}
+function closeRulesIfBg(e){if(e.target.id==='rulesBg')closeRules();}
+
+function delRule(key){
+  if(!confirm('Delete rule for "'+key+'"?'))return;
+  lsDeleteRule(key);
+  closeRules();showRulesManager();
+  updateRulesCount();
+  if(APP.tb)renderMappingPanel();
+}
+
+function togglePin(key){
+  var rules=lsLoad();
+  if(!rules[key])return;
+  rules[key].pinToLatest=!rules[key].pinToLatest;
+  // Re-evaluate winner based on new mode
+  var r=rules[key];
+  if(r.pinToLatest){
+    // Switch to latest
+    r.statement=r.latestStatement||r.statement;
+    r.section=r.latestSection||r.section;
+    r.lineItem=r.latestLineItem||r.lineItem;
+  }else{
+    // Switch to most frequent
+    var hist=r.history||[];
+    if(hist.length){
+      var best=hist[0];
+      for(var i=1;i<hist.length;i++){if(hist[i].count>best.count)best=hist[i];}
+      r.statement=best.statement;r.section=best.section;r.lineItem=best.lineItem;
+    }
+  }
+  lsSave(rules);
+  closeRules();showRulesManager();
+  if(APP.tb)renderMappingPanel();
+}
+function clearAllRules(){
+  if(!confirm('Delete ALL '+lsCount()+' saved rules? This cannot be undone.'))return;
+  APP.rulesCache={};
+  supaDeleteAll();
+  closeRules();showRulesManager();
+  updateRulesCount();
+  if(APP.tb)renderMappingPanel();
+}
+
+function exportRules(){
+  var rules=lsLoad();
+  var blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),rules:rules},null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='IFRS_Mapping_Rules_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+}
+
+function importRules(input){
+  var file=input.files[0];if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      var incoming=data.rules||data; // support both wrapped and raw
+      var existing=lsLoad();
+      var added=0;
+      Object.keys(incoming).forEach(function(k){
+        if(!existing[k]){existing[k]=incoming[k];added++;}
+        else{existing[k].count=(existing[k].count||1)+(incoming[k].count||1);}// merge counts
+      });
+      lsSave(existing);
+      alert('✅ Imported '+added+' new rules ('+Object.keys(incoming).length+' total in file).');
+      closeRules();showRulesManager();
+      updateRulesCount();
+      if(APP.tb)renderMappingPanel();
+    }catch(err){alert('❌ Could not read file: '+err.message);}
+    input.value='';
+  };
+  r.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════
+// GENERATE
+// ═══════════════════════════════════════════════
+function gen(){
+  if(!APP.tb)return;
+  var btn=document.getElementById('gb');btn.disabled=true;
+  setSteps(3);
+  var pSfp=document.getElementById('p-sfp');
+  if(pSfp)pSfp.innerHTML='<div class="ld" style="display:flex;flex-direction:column;align-items:center;padding:60px 20px"><div class="sp"></div><div class="ldh">Building Statements…</div></div>';
+
+  setTimeout(function(){
+    try{
+      var tb=APP.tb;
+      // CY: use MANUAL > LEARNED > AUTO for each account
+      var finalMaps=tb.accounts.map(function(a,i){return effMap(a.code,i).m;});
+      var stmts=buildStmts(tb.accounts,finalMaps);
+      APP.stmts=stmts;
+
+      // PY: straight smartMap of prior year accounts (no overrides)
+      var stmtsPY=null;
+      if(APP.tbPrior&&APP.tbPrior.accounts.length){
+        stmtsPY=buildStmts(APP.tbPrior.accounts,APP.mappingsPrior);
+        APP.stmtsPrior=stmtsPY;
+      }
+
+      var ctx={
+        co:document.getElementById('co').value||tb.companyName,
+        pe:document.getElementById('pe').value||tb.period,
+        pyPe:APP.pyPeriod||'',
+        cu:document.getElementById('cu').value||tb.currency,
+        r:parseInt(document.getElementById('ro').value)||1,
+        pr:document.getElementById('pr').value||'',
+        sn:document.getElementById('sn').value==='1',
+        pd:document.getElementById('pd').value==='1',
+        hasPY:!!stmtsPY
+      };
+
+      // Render all panes
+      getOrCreate('p-sfp').innerHTML=rSFP(stmts,ctx,stmtsPY);
+      getOrCreate('p-pl').innerHTML=rPL(stmts,ctx,stmtsPY);
+      getOrCreate('p-eq').innerHTML=rEQ(stmts,ctx,stmtsPY);
+      getOrCreate('p-nt').innerHTML=ctx.sn?rNotes(stmts,ctx,stmtsPY):noNotes();
+
+      var eb=document.getElementById('eb');
+      eb.style.display='flex';eb.style.gap='6px';
+      document.getElementById('exBtn').disabled=false;
+      setSteps(3);
+      sw('sfp',document.querySelectorAll('.tab')[1]);
+    }catch(err){alert('Error: '+err.message);console.error(err);}
+    btn.disabled=false;
+  },80);
+}
+
+function getOrCreate(id){
+  var el=document.getElementById(id);
+  if(!el){
+    var wrap=document.getElementById('stmtWrap')||document.getElementById('mb');
+    el=document.createElement('div');el.id=id;el.className='tp';wrap.appendChild(el);
+  }
+  return el;
+}
+
+function buildStmts(accounts,maps){
+  var SFPs=['NCA','CA','E','NCL','CL'],ISs=['REV','COS','DIST','ADMIN','OI','OE','FI','FC','TAX'];
+  var sfp={},is={};SFPs.forEach(function(s){sfp[s]={};});ISs.forEach(function(s){is[s]={};});
+  accounts.forEach(function(a,i){
+    var m=maps[i];if(!m)return;
+    var tgt=m.statement==='SFP'?sfp:is;
+    var sec=tgt[m.section];if(!sec)return;
+    if(!sec[m.lineItem])sec[m.lineItem]=[];
+    sec[m.lineItem].push(a);
+  });
+  return{sfp:sfp,is:is};
+}
+
+// Tab switching
+function sw(name,btn){
+  document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('ac');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('ac');});
+  var p=document.getElementById('p-'+name);if(p)p.classList.add('ac');
+  if(btn)btn.classList.add('ac');
+}
+function swById(name,tabId){
+  sw(name,document.getElementById(tabId));
+}
+
+// ═══════════════════════════════════════════════
+// FORMAT HELPERS
+// ═══════════════════════════════════════════════
+function fmt(v,r){
+  if(isNaN(v)||v===null)return'<span class="nil">—</span>';
+  var x=v/r;if(Math.abs(x)<0.5)return'<span class="nil">—</span>';
+  var abs=Math.abs(x);
+  var s=abs.toLocaleString('en-US',{minimumFractionDigits:r>=1000?0:2,maximumFractionDigits:r>=1000?0:2});
+  return x<0?'<span class="num neg">('+s+')</span>':'<span class="num">'+s+'</span>';
+}
+function sumLI(accs){return(accs||[]).reduce(function(s,a){return s+a.net;},0);}
+function dv(net,section){return['E','NCL','CL','REV','OI','FI'].indexOf(section)>=0?-net:net;}
+function secT(secObj,section){var t=0;Object.values(secObj).forEach(function(accs){t+=dv(sumLI(accs),section);});return t;}
+function netProfit(is){
+  var c=function(s){return secT(is[s]||{},s);};
+  return c('REV')-c('COS')-c('DIST')-c('ADMIN')+c('OI')-c('OE')+c('FI')-c('FC')-c('TAX');
+}
+function pEnd(p){
+  var m=p.match(/to\s*:?\s*(\d{4}-\d{2}-\d{2})/i);if(m)return new Date(m[1]).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var m2=p.match(/(\d{2}\/\d{2}\/\d{4})/g);if(m2)return m2[m2.length-1];
+  var m3=p.match(/\d{4}$/);if(m3)return'31 December '+m3[0];
+  return p;
+}
+function rl(r,cu){return r===1000?' ('+cu+' in thousands)':r===1000000?' ('+cu+' in millions)':'';}
+
+// ═══════════════════════════════════════════════
+// RENDER HELPERS — raw numeric value for a section (no HTML)
+// ═══════════════════════════════════════════════
+function secTV(stmts,secName){return stmts?secT(stmts.sfp[secName]||{},secName):null;}
+function npV(stmts){return stmts?netProfit(stmts.is):null;}
+function fmtN(v,r){// plain number, no HTML
+  if(v===null||v===undefined||isNaN(v))return'';
+  var x=v/r;if(Math.abs(x)<0.5)return'—';
+  var abs=Math.abs(x);
+  var s=abs.toLocaleString('en-US',{minimumFractionDigits:r>=1000?0:2,maximumFractionDigits:r>=1000?0:2});
+  return x<0?'('+s+')':s;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: SFP (with optional comparative column)
+// ═══════════════════════════════════════════════
+function rSFP(stmts,ctx,py){
+  var sfp=stmts.sfp,is=stmts.is,r=ctx.r;
+  var ncaT=secT(sfp.NCA,'NCA'),caT=secT(sfp.CA,'CA'),eT=secT(sfp.E,'E'),nclT=secT(sfp.NCL,'NCL'),clT=secT(sfp.CL,'CL');
+  var np=netProfit(is),totA=ncaT+caT,totEL=eT+np+nclT+clT;
+  var diff=Math.abs(totA-totEL),bal=diff/(Math.max(Math.abs(totA),1))<0.005;
+  var cols=ctx.hasPY?4:3;
+
+  // Build a merged list of all line items across CY+PY for a section
+  function liR(so,sec,pySo){
+    var keys={};
+    Object.keys(so).forEach(function(k){keys[k]=1;});
+    if(pySo)Object.keys(pySo).forEach(function(k){keys[k]=1;});
+    return Object.keys(keys).sort().map(function(li){
+      var cy=dv(sumLI(so[li]||[]),sec);
+      var pyVal=pySo?dv(sumLI((pySo[li]||[]),),sec):null;
+      if(Math.abs(cy/r)<0.4&&(pyVal===null||Math.abs(pyVal/r)<0.4))return'';
+      var pyCell=ctx.hasPY?'<td class="py-col">'+fmt(pyVal,r)+'</td>':'';
+      return'<tr class="rli"><td>'+esc(li)+'</td><td></td>'+pyCell+'<td>'+fmt(cy,r)+'</td></tr>';
+    }).join('');
+  }
+
+  var pySFP=py?py.sfp:null;
+  var pyNcaT=pySFP?secT(pySFP.NCA,'NCA'):null,pyCaT=pySFP?secT(pySFP.CA,'CA'):null;
+  var pyEt=pySFP?secT(pySFP.E,'E'):null,pyNclT=pySFP?secT(pySFP.NCL,'NCL'):null,pyClT=pySFP?secT(pySFP.CL,'CL'):null;
+  var pyNp=py?netProfit(py.is):null;
+  var pyTotA=pyNcaT!==null?pyNcaT+pyCaT:null,pyTotEL=pyEt!==null?pyEt+(pyNp||0)+pyNclT+pyClT:null;
+  var pyH=ctx.hasPY?'<th class="py-h" style="width:18%">'+esc(pEnd(ctx.pyPe)||'Prior Year')+'</th>':'';
+  var pyRst=function(v){return ctx.hasPY?'<td class="py-col">'+fmt(v,r)+'</td>':'';}
+
+  var w=ctx.hasPY?'50%':'60%';
+  var h='<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgsb">'+(ctx.pr||'Financial Statements')+'</div><div class="pgt"><h2>Statement of Financial Position</h2><p>As at '+pEnd(ctx.pe)+rl(r,ctx.cu)+'</p></div></div><div class="hrl"></div><div class="tw"><table class="tb"><thead><tr><th style="width:'+w+'">Description</th><th style="width:10%">Note</th>'+pyH+'<th style="width:22%">'+ctx.cu+'</th></tr></thead><tbody>';
+
+  if(Object.keys(sfp.NCA).length||Object.keys((pySFP&&pySFP.NCA)||{}).length){h+='<tr class="rsh f"><td colspan="'+cols+'">ASSETS &nbsp;<span style="font-size:11px;font-weight:400;font-family:sans-serif;color:var(--tx3)">Non-Current Assets</span></td></tr>'+liR(sfp.NCA,'NCA',pySFP&&pySFP.NCA)+'<tr class="rst"><td>Total Non-Current Assets</td><td></td>'+pyRst(pyNcaT)+'<td>'+fmt(ncaT,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+  if(Object.keys(sfp.CA).length||Object.keys((pySFP&&pySFP.CA)||{}).length){h+='<tr class="rsh"><td colspan="'+cols+'">Current Assets</td></tr>'+liR(sfp.CA,'CA',pySFP&&pySFP.CA)+'<tr class="rst"><td>Total Current Assets</td><td></td>'+pyRst(pyCaT)+'<td>'+fmt(caT,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+  h+='<tr class="rtot"><td>TOTAL ASSETS</td><td></td>'+pyRst(pyTotA)+'<td>'+fmt(totA,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';
+
+  if(Object.keys(sfp.E).length||Object.keys((pySFP&&pySFP.E)||{}).length){
+    h+='<tr class="rsh"><td colspan="'+cols+'">EQUITY AND LIABILITIES &nbsp;<span style="font-size:11px;font-weight:400;font-family:sans-serif;color:var(--tx3)">Equity</span></td></tr>'+liR(sfp.E,'E',pySFP&&pySFP.E);
+    if(np!==0||pyNp!==null)h+='<tr class="rli '+(np>=0?'pf':'lf')+'"><td>Net Profit/(Loss) for the Period</td><td></td>'+pyRst(pyNp)+'<td>'+fmt(np,r)+'</td></tr>';
+    h+='<tr class="rst"><td>Total Equity</td><td></td>'+pyRst(pyEt!==null?pyEt+(pyNp||0):null)+'<td>'+fmt(eT+np,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';
+  }
+  if(Object.keys(sfp.NCL).length||Object.keys((pySFP&&pySFP.NCL)||{}).length){h+='<tr class="rsh"><td colspan="'+cols+'">Non-Current Liabilities</td></tr>'+liR(sfp.NCL,'NCL',pySFP&&pySFP.NCL)+'<tr class="rst"><td>Total Non-Current Liabilities</td><td></td>'+pyRst(pyNclT)+'<td>'+fmt(nclT,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+  if(Object.keys(sfp.CL).length||Object.keys((pySFP&&pySFP.CL)||{}).length){h+='<tr class="rsh"><td colspan="'+cols+'">Current Liabilities</td></tr>'+liR(sfp.CL,'CL',pySFP&&pySFP.CL)+'<tr class="rst"><td>Total Current Liabilities</td><td></td>'+pyRst(pyClT)+'<td>'+fmt(clT,r)+'</td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+  h+='<tr class="rgt"><td>TOTAL EQUITY AND LIABILITIES</td><td></td>'+pyRst(pyTotEL)+'<td>'+fmt(totEL,r)+'</td></tr>';
+  h+='</tbody></table><span class="ck '+(bal?'cko':'ckf')+'">'+(bal?'✓ Statement balances':'⚠ Difference: '+fmt(totA-totEL,r))+'</span></div></div></div>';
+  return h;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: P&L (with comparative)
+// ═══════════════════════════════════════════════
+function rPL(stmts,ctx,py){
+  var is=stmts.is,r=ctx.r,pd=ctx.pd;
+  var c=function(s){return secT(is[s]||{},s);};
+  var rev=c('REV'),cos=c('COS'),dist=c('DIST'),admin=c('ADMIN'),oi=c('OI'),oe=c('OE'),fi=c('FI'),fc=c('FC'),tax=c('TAX');
+  var gp=rev-cos,op=gp-dist-admin+oi-oe,pbt=op+fi-fc,np=pbt-tax;
+  var pyIs=py?py.is:null;
+  var pc=function(s){return pyIs?secT(pyIs[s]||{},s):null;};
+  var pRev=pc('REV'),pCos=pc('COS'),pDist=pc('DIST'),pAdmin=pc('ADMIN'),pOi=pc('OI'),pOe=pc('OE'),pFi=pc('FI'),pFc=pc('FC'),pTax=pc('TAX');
+  var pGp=pRev!==null?pRev-pCos:null,pOp=pGp!==null?pGp-pDist-pAdmin+pOi-pOe:null;
+  var pPbt=pOp!==null?pOp+pFi-pFc:null,pNp=pPbt!==null?pPbt-pTax:null;
+  var cols=ctx.hasPY?4:3;
+  var pyH=ctx.hasPY?'<th class="py-h" style="width:18%">'+esc(pEnd(ctx.pyPe)||'Prior Year')+'</th>':'';
+  var pyC=function(v){return ctx.hasPY?'<td class="py-col">'+fmt(v,r)+'</td>':''};
+  var w=ctx.hasPY?'50%':'60%';
+
+  if(rev+cos+dist+admin+oi+oe+fi+fc+tax===0)return'<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgt"><h2>Statement of Profit or Loss</h2></div></div><div class="hrl"></div><div class="tw"><p style="font-family:sans-serif;font-size:13px;color:var(--tx3);padding:20px 0">No income or expense accounts found. Codes 4–9 map to this statement.</p></div></div></div>';
+
+  function liR(so,pySo,sec){
+    if(!pd)return'';
+    var keys={};Object.keys(so).forEach(function(k){keys[k]=1;});
+    if(pySo)Object.keys(pySo).forEach(function(k){keys[k]=1;});
+    return Object.keys(keys).map(function(li){
+      var v=dv(sumLI((so[li]||[])),sec);
+      var pv=pySo?dv(sumLI((pySo[li]||[])),sec):null;
+      if(Math.abs(v/r)<0.4&&(pv===null||Math.abs(pv/r)<0.4))return'';
+      return'<tr class="rli"><td>'+esc(li)+'</td><td></td>'+pyC(pv)+'<td>'+fmt(v,r)+'</td></tr>';
+    }).join('');
+  }
+
+  var h='<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgsb">'+(ctx.pr||'Financial Statements')+'</div><div class="pgt"><h2>Statement of Profit or Loss</h2><p>For the period ended '+pEnd(ctx.pe)+rl(r,ctx.cu)+'</p></div></div><div class="hrl"></div><div class="tw">';
+
+  // ── Zero-revenue warning banner ────────────────────────────────────────────
+  if(rev===0&&(admin+cos+dist+oe+fi+fc+tax)!==0){
+    h+='<div style="margin:0 0 14px;padding:11px 14px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12px;font-family:sans-serif;color:#92400E">'+
+       '<b>⚠ No Revenue accounts found.</b> Your P&L has income statement entries but zero revenue — some accounts may be mapped to the wrong section. '+
+       'Check the Mapping Review tab for any accounts that should be in <b>IS → Revenue</b>.</div>';
+  }
+
+  // ── OI / OE sign-aware display ─────────────────────────────────────────────
+  // When OE is negative it means accounts with credit balances ended up there
+  // (e.g. revenue mis-mapped to Other Expenses). We fold those into OI so the
+  // statement never shows a negative "Other Expenses" line.
+  var oi_disp = oi;           // display value for Other Income
+  var oe_disp = oe;           // display value for Other Expenses
+  var netOtherLabel = null;   // used when signs are mixed / unusual
+  if(oe < 0){
+    // All or part of OE is actually income — absorb into OI and show net
+    oi_disp = oi - oe;        // oi + |oe|
+    oe_disp = 0;
+    netOtherLabel = 'Other Income / (Expenses), net';
+  }
+  if(oi < 0){
+    // OI is negative (unusual but possible) — absorb and show net expense
+    oe_disp = oe - oi;
+    oi_disp = 0;
+    netOtherLabel = 'Other Income / (Expenses), net';
+  }
+
+  h+='<table class="tb"><thead><tr><th style="width:'+w+'">Description</th><th style="width:10%">Note</th>'+pyH+'<th style="width:22%">'+ctx.cu+'</th></tr></thead><tbody>';
+
+  if(rev!==0||pRev){
+    h+='<tr class="rsh f"><td colspan="'+cols+'">Revenue</td></tr>'+liR(is.REV,pyIs&&pyIs.REV,'REV');
+    if(!pd)h+='<tr class="rli"><td>Revenue</td><td></td>'+pyC(pRev)+'<td>'+fmt(rev,r)+'</td></tr>';
+    else if(Object.keys(is.REV||{}).length>1)h+='<tr class="rst"><td>Total Revenue</td><td></td>'+pyC(pRev)+'<td>'+fmt(rev,r)+'</td></tr>';
+    h+='<tr class="rb"><td colspan="'+cols+'"></td></tr>';
+  }
+  if(cos!==0||pCos){
+    h+='<tr class="rsh"><td colspan="'+cols+'">Cost of Revenue</td></tr>'+liR(is.COS,pyIs&&pyIs.COS,'COS');
+    if(!pd)h+='<tr class="rli"><td>Cost of Revenue</td><td></td>'+pyC(pCos)+'<td>'+fmt(cos,r)+'</td></tr>';
+    else if(Object.keys(is.COS||{}).length>1)h+='<tr class="rst"><td>Total Cost of Revenue</td><td></td>'+pyC(pCos)+'<td>'+fmt(cos,r)+'</td></tr>';
+    h+='<tr class="rb"><td colspan="'+cols+'"></td></tr>';
+  }
+  if(rev||cos)h+='<tr class="rst"><td><strong>Gross Profit/(Loss)</strong></td><td></td>'+pyC(pGp)+'<td><strong>'+fmt(gp,r)+'</strong></td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';
+  if(dist!==0||pDist){h+='<tr class="rsh"><td colspan="'+cols+'">Distribution &amp; Selling Expenses</td></tr>'+liR(is.DIST,pyIs&&pyIs.DIST,'DIST');if(!pd)h+='<tr class="rli"><td>Distribution Expenses</td><td></td>'+pyC(pDist)+'<td>'+fmt(dist,r)+'</td></tr>';h+='<tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+  if(admin!==0||pAdmin){h+='<tr class="rsh"><td colspan="'+cols+'">General &amp; Administrative Expenses</td></tr>'+liR(is.ADMIN,pyIs&&pyIs.ADMIN,'ADMIN');if(!pd)h+='<tr class="rli"><td>G&amp;A Expenses</td><td></td>'+pyC(pAdmin)+'<td>'+fmt(admin,r)+'</td></tr>';h+='<tr class="rb"><td colspan="'+cols+'"></td></tr>';}
+
+  // Sign-safe OI / OE display
+  var pNetOther=(pOi!==null||pOe!==null)?(pOi||0)-(pOe||0):null;
+  if(netOtherLabel){
+    // Mixed signs: show a single net line with the combined label
+    if(oi_disp!==0||pNetOther)h+='<tr class="rli"><td>'+netOtherLabel+'</td><td></td>'+pyC(pNetOther)+'<td>'+fmt(oi_disp,r)+'</td></tr>';
+  }else{
+    if(oi_disp!==0||pOi)h+='<tr class="rli"><td>Other Income</td><td></td>'+pyC(pOi)+'<td>'+fmt(oi_disp,r)+'</td></tr>';
+    if(oe_disp!==0||pOe)h+='<tr class="rli"><td>Other Expenses</td><td></td>'+pyC(pOe)+'<td>'+fmt(oe_disp,r)+'</td></tr>';
+  }
+
+  h+='<tr class="rst"><td><strong>Operating Profit/(Loss)</strong></td><td></td>'+pyC(pOp)+'<td><strong>'+fmt(op,r)+'</strong></td></tr><tr class="rb"><td colspan="'+cols+'"></td></tr>';
+  if(fi!==0||pFi)h+='<tr class="rli"><td>Finance Income</td><td></td>'+pyC(pFi)+'<td>'+fmt(fi,r)+'</td></tr>';
+  if(fc!==0||pFc)h+='<tr class="rli"><td>Finance Costs</td><td></td>'+pyC(pFc)+'<td>'+fmt(fc,r)+'</td></tr>';
+  h+='<tr class="rst"><td><strong>Profit/(Loss) Before Tax</strong></td><td></td>'+pyC(pPbt)+'<td><strong>'+fmt(pbt,r)+'</strong></td></tr>';
+  if(tax!==0||pTax)h+='<tr class="rli"><td>Zakat / Income Tax</td><td></td>'+pyC(pTax)+'<td>'+fmt(tax,r)+'</td></tr>';
+  h+='<tr class="rb"><td colspan="'+cols+'"></td></tr><tr class="rgt '+(np>=0?'pf':'lf')+'"><td>NET PROFIT/(LOSS) FOR THE PERIOD</td><td></td>'+pyC(pNp)+'<td>'+fmt(np,r)+'</td></tr>';
+  h+='</tbody></table></div></div></div>';
+  return h;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: EQUITY (with comparative opening balance)
+// ═══════════════════════════════════════════════
+function rEQ(stmts,ctx,py){
+  var r=ctx.r,np=netProfit(stmts.is);
+  var sc=0,re=0,or=0;
+  Object.entries(stmts.sfp.E||{}).forEach(function(e){var v=dv(sumLI(e[1]),'E');if(e[0]==='Share Capital')sc+=v;else if(e[0]==='Retained Earnings')re+=v;else or+=v;});
+  // PY closing = CY opening
+  var pySc=0,pyRe=0,pyOr=0,pyNp=0;
+  if(py){
+    Object.entries(py.sfp.E||{}).forEach(function(e){var v=dv(sumLI(e[1]),'E');if(e[0]==='Share Capital')pySc+=v;else if(e[0]==='Retained Earnings')pyRe+=v;else pyOr+=v;});
+    pyNp=netProfit(py.is);
+    // CY opening = PY closing
+    sc=pySc; re=pyRe+(pyNp||0); or=pyOr;
+  }
+  return'<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgsb">'+(ctx.pr||'Financial Statements')+'</div><div class="pgt"><h2>Statement of Changes in Equity</h2><p>For the period ended '+pEnd(ctx.pe)+'</p></div></div><div class="hrl"></div><div class="tw"><table class="tb"><thead><tr><th style="width:34%;text-align:left">Description</th><th>Share Capital</th><th>Retained Earnings</th><th>Other Reserves</th><th>Total</th></tr></thead><tbody><tr class="rsh f"><td colspan="5">Opening Balance</td></tr><tr class="rli"><td>Balance at beginning of period</td><td>'+fmt(sc,r)+'</td><td>'+fmt(re,r)+'</td><td>'+fmt(or,r)+'</td><td>'+fmt(sc+re+or,r)+'</td></tr><tr class="rb"><td colspan="5"></td></tr><tr class="rsh"><td colspan="5">Movements During the Period</td></tr><tr class="rli '+(np>=0?'pf':'lf')+'"><td>Net Profit/(Loss) for the Period</td><td><span class="nil">—</span></td><td>'+fmt(np,r)+'</td><td><span class="nil">—</span></td><td>'+fmt(np,r)+'</td></tr><tr class="rb"><td colspan="5"></td></tr><tr class="rgt"><td>CLOSING BALANCE</td><td>'+fmt(sc,r)+'</td><td>'+fmt(re+np,r)+'</td><td>'+fmt(or,r)+'</td><td>'+fmt(sc+re+or+np,r)+'</td></tr></tbody></table></div></div></div>';
+}
+
+// ═══════════════════════════════════════════════
+// EXCEL EXPORT
+// ═══════════════════════════════════════════════
+function exportExcel(){
+  if(!APP.stmts){alert('Please generate statements first.');return;}
+  var stmts=APP.stmts,py=APP.stmtsPrior,ctx={
+    co:document.getElementById('co').value,
+    pe:document.getElementById('pe').value,
+    pyPe:APP.pyPeriod||'',
+    cu:document.getElementById('cu').value,
+    r:parseInt(document.getElementById('ro').value)||1
+  };
+  var wb=XLSX.utils.book_new();
+  exSFP(wb,stmts,py,ctx);
+  exPL(wb,stmts,py,ctx);
+  exEQ(wb,stmts,py,ctx);
+  exNotes(wb,stmts,py,ctx);
+  exTB(wb);
+  var fname=(ctx.co||'Financial_Statements').replace(/[\\/:*?"<>|]/g,'_')+'.xlsx';
+  XLSX.writeFile(wb,fname);
+}
+
+// ── Styles ──
+var XS={
+  hdr:{font:{bold:true,sz:11},fill:{fgColor:{rgb:'0D1B35'}},font:{bold:true,color:{rgb:'FFFFFF'},sz:10}},
+  sectHdr:{font:{bold:true,italic:true,sz:10},fill:{fgColor:{rgb:'EEF2F7'}}},
+  total:{font:{bold:true,sz:10},border:{top:{style:'thin'},bottom:{style:'thin'}}},
+  grandTotal:{font:{bold:true,sz:11},border:{top:{style:'medium'},bottom:{style:'medium'}}},
+  num:{numFmt:'#,##0.00;(#,##0.00);"-"'},
+  numB:{numFmt:'#,##0.00;(#,##0.00);"-"',font:{bold:true}},
+  label:{font:{sz:10}},
+  indent:{font:{sz:10},alignment:{indent:1}},
+  title:{font:{bold:true,sz:14}},
+  subtitle:{font:{sz:10,color:{rgb:'666666'}}},
+  py:{font:{sz:10,color:{rgb:'888888'}},numFmt:'#,##0.00;(#,##0.00);"-"'},
+  green:{font:{bold:true,color:{rgb:'166534'},sz:10}},
+  red:{font:{bold:true,color:{rgb:'991B1B'},sz:10}}
+};
+function cs(style){return Object.assign({},style);}
+
+function addSheet(wb,name,rows,colWidths){
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  if(colWidths)ws['!cols']=colWidths.map(function(w){return{wch:w};});
+  XLSX.utils.book_append_sheet(wb,ws,name);
+  return ws;
+}
+
+function n(v,r){if(v===null||v===undefined||isNaN(v))return null;var x=v/r;return Math.abs(x)<0.5?null:x;}
+
+function exSFP(wb,stmts,py,ctx){
+  var sfp=stmts.sfp,is=stmts.is,r=ctx.r;
+  var pySFP=py?py.sfp:null,pyIS=py?py.is:null;
+  var ncaT=secT(sfp.NCA,'NCA'),caT=secT(sfp.CA,'CA'),eT=secT(sfp.E,'E'),nclT=secT(sfp.NCL,'NCL'),clT=secT(sfp.CL,'CL');
+  var np=netProfit(is);
+  var pyH=ctx.pyPe?pEnd(ctx.pyPe):'Prior Year';
+  var rows=[[ctx.co],[ctx.pr||'Financial Statements'],['Statement of Financial Position'],['As at '+pEnd(ctx.pe)+(ctx.pyPe?'  |  Comparative: '+pyH:'')],[]];
+  var hasPY=!!py;
+  var headerRow=['Description','Note'];
+  if(hasPY)headerRow.push(pyH);
+  headerRow.push(ctx.cu);
+  rows.push(headerRow);
+
+  function secRows(so,sec,pySo){
+    var keys={};Object.keys(so).forEach(function(k){keys[k]=1;});
+    if(pySo)Object.keys(pySo).forEach(function(k){keys[k]=1;});
+    Object.keys(keys).sort().forEach(function(li){
+      var cy=dv(sumLI(so[li]||[]),sec);
+      var pyV=pySo?dv(sumLI(pySo[li]||[]),sec):null;
+      var row=['  '+li,null];
+      if(hasPY)row.push(n(pyV,r));
+      row.push(n(cy,r));
+      rows.push(row);
+    });
+  }
+
+  function totRow(label,cy,pyV){
+    var row=[label,null];if(hasPY)row.push(n(pyV,r));row.push(n(cy,r));rows.push(row);
+  }
+
+  rows.push(['ASSETS — Non-Current Assets']);secRows(sfp.NCA,'NCA',pySFP&&pySFP.NCA);totRow('Total Non-Current Assets',ncaT,pySFP?secT(pySFP.NCA,'NCA'):null);rows.push([]);
+  rows.push(['Current Assets']);secRows(sfp.CA,'CA',pySFP&&pySFP.CA);totRow('Total Current Assets',caT,pySFP?secT(pySFP.CA,'CA'):null);rows.push([]);
+  totRow('TOTAL ASSETS',ncaT+caT,pySFP?secT(pySFP.NCA,'NCA')+secT(pySFP.CA,'CA'):null);rows.push([]);
+  rows.push(['EQUITY AND LIABILITIES — Equity']);secRows(sfp.E,'E',pySFP&&pySFP.E);
+  var npRow=['  Net Profit/(Loss) for the Period',null];if(hasPY)npRow.push(n(pyIS?netProfit(pyIS):null,r));npRow.push(n(np,r));rows.push(npRow);
+  totRow('Total Equity',eT+np,pySFP?secT(pySFP.E,'E')+(pyIS?netProfit(pyIS):0):null);rows.push([]);
+  if(Object.keys(sfp.NCL).length){rows.push(['Non-Current Liabilities']);secRows(sfp.NCL,'NCL',pySFP&&pySFP.NCL);totRow('Total Non-Current Liabilities',nclT,pySFP?secT(pySFP.NCL,'NCL'):null);rows.push([]);}
+  rows.push(['Current Liabilities']);secRows(sfp.CL,'CL',pySFP&&pySFP.CL);totRow('Total Current Liabilities',clT,pySFP?secT(pySFP.CL,'CL'):null);rows.push([]);
+  var teL=eT+np+nclT+clT;totRow('TOTAL EQUITY AND LIABILITIES',teL,pySFP?secT(pySFP.E,'E')+(pyIS?netProfit(pyIS):0)+secT(pySFP.NCL,'NCL')+secT(pySFP.CL,'CL'):null);
+  addSheet(wb,'Financial Position',rows,hasPY?[45,8,16,16]:[45,8,16]);
+}
+
+function exPL(wb,stmts,py,ctx){
+  var is=stmts.is,r=ctx.r,pyIs=py?py.is:null,hasPY=!!py;
+  var c=function(s){return secT(is[s]||{},s);};
+  var pc=function(s){return pyIs?secT(pyIs[s]||{},s):null;};
+  var rev=c('REV'),cos=c('COS'),dist=c('DIST'),admin=c('ADMIN'),oi=c('OI'),oe=c('OE'),fi=c('FI'),fc=c('FC'),tax=c('TAX');
+  var gp=rev-cos,op=gp-dist-admin+oi-oe,pbt=op+fi-fc,np=pbt-tax;
+  var pRev=pc('REV'),pCos=pc('COS'),pDist=pc('DIST'),pAdmin=pc('ADMIN'),pOi=pc('OI'),pOe=pc('OE'),pFi=pc('FI'),pFc=pc('FC'),pTax=pc('TAX');
+  var pGp=pRev!==null?pRev-pCos:null,pOp=pGp!==null?pGp-pDist-pAdmin+pOi-pOe:null;
+  var pPbt=pOp!==null?pOp+pFi-pFc:null,pNp=pPbt!==null?pPbt-pTax:null;
+  var pyH=ctx.pyPe?pEnd(ctx.pyPe):'Prior Year';
+  var rows=[[ctx.co],[ctx.pr||'Financial Statements'],['Statement of Profit or Loss'],['For the period ended '+pEnd(ctx.pe)],[]];
+  var hrow=['Description','Note'];if(hasPY)hrow.push(pyH);hrow.push(ctx.cu);rows.push(hrow);
+
+  function liRows(so,pySo,sec){
+    var keys={};Object.keys(so).forEach(function(k){keys[k]=1;});if(pySo)Object.keys(pySo).forEach(function(k){keys[k]=1;});
+    Object.keys(keys).forEach(function(li){
+      var cv=dv(sumLI(so[li]||[]),sec),pv=pySo?dv(sumLI(pySo[li]||[]),sec):null;
+      var row=['  '+li,null];if(hasPY)row.push(n(pv,r));row.push(n(cv,r));rows.push(row);
+    });
+  }
+  function totRow(lbl,cv,pv){var row=[lbl,null];if(hasPY)row.push(n(pv,r));row.push(n(cv,r));rows.push(row);}
+
+  rows.push(['Revenue']);liRows(is.REV,pyIs&&pyIs.REV,'REV');totRow('Total Revenue',rev,pRev);rows.push([]);
+  rows.push(['Cost of Revenue']);liRows(is.COS,pyIs&&pyIs.COS,'COS');totRow('Total Cost of Revenue',cos,pCos);rows.push([]);
+  totRow('Gross Profit/(Loss)',gp,pGp);rows.push([]);
+  if(dist||pDist){rows.push(['Distribution & Selling Expenses']);liRows(is.DIST,pyIs&&pyIs.DIST,'DIST');totRow('Total Distribution Expenses',dist,pDist);rows.push([]);}
+  rows.push(['General & Administrative Expenses']);liRows(is.ADMIN,pyIs&&pyIs.ADMIN,'ADMIN');totRow('Total G&A Expenses',admin,pAdmin);rows.push([]);
+  if(oi||pOi){var r1=['  Other Income',null];if(hasPY)r1.push(n(pOi,r));r1.push(n(oi,r));rows.push(r1);}
+  if(oe||pOe){var r1=['  Other Expenses',null];if(hasPY)r1.push(n(pOe,r));r1.push(n(oe,r));rows.push(r1);}
+  totRow('Operating Profit/(Loss)',op,pOp);rows.push([]);
+  if(fi||pFi){var r1=['  Finance Income',null];if(hasPY)r1.push(n(pFi,r));r1.push(n(fi,r));rows.push(r1);}
+  if(fc||pFc){var r1=['  Finance Costs',null];if(hasPY)r1.push(n(pFc,r));r1.push(n(fc,r));rows.push(r1);}
+  totRow('Profit/(Loss) Before Tax',pbt,pPbt);
+  if(tax||pTax){var r1=['  Zakat / Income Tax',null];if(hasPY)r1.push(n(pTax,r));r1.push(n(tax,r));rows.push(r1);}
+  rows.push([]);
+  var gr=['NET PROFIT/(LOSS) FOR THE PERIOD',null];if(hasPY)gr.push(n(pNp,r));gr.push(n(np,r));rows.push(gr);
+  addSheet(wb,'Profit & Loss',rows,hasPY?[45,8,16,16]:[45,8,16]);
+}
+
+function exEQ(wb,stmts,py,ctx){
+  var r=ctx.r,np=netProfit(stmts.is);
+  var sc=0,re=0,or=0;
+  Object.entries(stmts.sfp.E||{}).forEach(function(e){var v=dv(sumLI(e[1]),'E');if(e[0]==='Share Capital')sc+=v;else if(e[0]==='Retained Earnings')re+=v;else or+=v;});
+  var openSc=sc,openRe=re,openOr=or;
+  if(py){
+    var pySc=0,pyRe=0,pyOr=0,pyNp2=netProfit(py.is);
+    Object.entries(py.sfp.E||{}).forEach(function(e){var v=dv(sumLI(e[1]),'E');if(e[0]==='Share Capital')pySc+=v;else if(e[0]==='Retained Earnings')pyRe+=v;else pyOr+=v;});
+    openSc=pySc;openRe=pyRe+(pyNp2||0);openOr=pyOr;
+  }
+  var rows=[[ctx.co],[ctx.pr||'Financial Statements'],['Statement of Changes in Equity'],['For the period ended '+pEnd(ctx.pe)],[],
+    ['Description','Share Capital','Retained Earnings','Other Reserves','Total'],
+    ['Opening Balance',null,null,null,null],
+    ['  Balance at beginning of period',n(openSc,r),n(openRe,r),n(openOr,r),n(openSc+openRe+openOr,r)],[],
+    ['Movements During the Period',null,null,null,null],
+    ['  Net Profit/(Loss) for the Period',null,n(np,r),null,n(np,r)],[],
+    ['CLOSING BALANCE',n(openSc,r),n(openRe+np,r),n(openOr,r),n(openSc+openRe+openOr+np,r)]
+  ];
+  addSheet(wb,'Changes in Equity',rows,[38,16,18,16,16]);
+}
+
+function exNotes(wb,stmts,py,ctx){
+  var sfp=stmts.sfp,is=stmts.is,r=ctx.r,rows=[],nn=1;
+  rows.push([ctx.co]);rows.push(['Notes to the Financial Statements']);rows.push(['For the period ended '+pEnd(ctx.pe)]);rows.push([]);
+
+  function note(title,cols,data,totRow){
+    rows.push(['Note '+nn+'. '+title]);nn++;
+    rows.push(cols);
+    data.forEach(function(d){rows.push(d);});
+    if(totRow)rows.push(totRow);
+    rows.push([]);
+  }
+
+  rows.push(['Note 1. Basis of Preparation']);
+  rows.push(['These financial statements are prepared in accordance with IFRS as issued by the IASB, in '+ctx.cu+', on the historical cost basis.']);rows.push([]);nn++;
+
+  var ppe=sfp.NCA['Property, Plant and Equipment']||[];
+  if(ppe.length){
+    var gross=ppe.filter(function(a){return a.net>0;}),dep=ppe.filter(function(a){return a.net<0;});
+    var gT=gross.reduce(function(s,a){return s+a.net;},0),dT=dep.reduce(function(s,a){return s+a.net;},0);
+    note('Property, Plant and Equipment',['Asset','Gross Cost ('+ctx.cu+')','Accum. Dep. ('+ctx.cu+')','Net Book Value ('+ctx.cu+')'],
+      gross.map(function(a){return[a.name,n(a.net,r),null,n(a.net,r)];}).concat(dep.map(function(a){return[a.name,null,n(-a.net,r),null];})),
+      ['Total',n(gT,r),n(-dT,r),n(gT+dT,r)]);
+  }
+
+  function noteCA(li,title){
+    var accs=sfp.CA[li]||[];if(!accs.length)return;
+    var t=accs.reduce(function(s,a){return s+a.net;},0);
+    note(title,['Description',ctx.cu],accs.map(function(a){return[a.name,n(a.net,r)];}),['Total',n(t,r)]);
+  }
+  noteCA('Trade and Other Receivables','Trade and Other Receivables');
+  noteCA('Inventories','Inventories');
+  noteCA('Cash and Cash Equivalents','Cash and Cash Equivalents');
+  noteCA('Prepayments and Deposits','Prepayments and Deposits');
+  noteCA('VAT and Tax Receivables','VAT and Tax Receivables');
+
+  var tpAll=[].concat(sfp.CL['Trade and Other Payables']||[]).concat(sfp.CL['Accrued Liabilities']||[]);
+  if(tpAll.length){var t=tpAll.reduce(function(s,a){return s+(-a.net);},0);note('Trade and Other Payables',['Description',ctx.cu],tpAll.map(function(a){return[a.name,n(-a.net,r)];}),['Total',n(t,r)]);}
+
+  var allAdm=[];Object.values(is.ADMIN||{}).forEach(function(v){allAdm=allAdm.concat(v);});
+  if(allAdm.length>1){var t=allAdm.reduce(function(s,a){return s+a.net;},0);note('General & Administrative Expenses',['Description',ctx.cu],allAdm.map(function(a){return[a.name,n(a.net,r)];}),['Total',n(t,r)]);}
+
+  var allCos=[];Object.values(is.COS||{}).forEach(function(v){allCos=allCos.concat(v);});
+  if(allCos.length>1){var t=allCos.reduce(function(s,a){return s+a.net;},0);note('Cost of Revenue',['Description',ctx.cu],allCos.map(function(a){return[a.name,n(a.net,r)];}),['Total',n(t,r)]);}
+
+  addSheet(wb,'Notes',rows,[42,18,18,18]);
+}
+
+function exTB(wb){
+  if(!APP.tb)return;
+  var rows=[['Code','Account Name','End Debit','End Credit','Net Balance','Statement','Section','Line Item','Source']];
+  APP.tb.accounts.forEach(function(a,i){
+    var em=effMap(a.code,i);
+    rows.push([a.code,a.name,a.endDebit||0,a.endCredit||0,a.net,em.m.statement,em.m.section,em.m.lineItem,em.src]);
+  });
+  addSheet(wb,'Account Mapping',rows,[12,42,14,14,14,10,22,30,10]);
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: NOTES
+// ═══════════════════════════════════════════════
+function rNotes(stmts,ctx,py){
+  var sfp=stmts.sfp,is=stmts.is,r=ctx.r;
+  var h='<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgt"><h2>Notes to the Financial Statements</h2><p>For the period ended '+pEnd(ctx.pe)+'</p></div></div><div class="hrl"></div><div class="nb">';
+  h+='<div class="nc"><h4>1.  Basis of Preparation and Significant Accounting Policies</h4><p>These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB). They are presented in '+ctx.cu+', the functional and presentation currency, and prepared on the historical cost basis unless stated otherwise.</p><ul><li><strong>Revenue (IFRS 15):</strong> Recognised when control of goods or services is transferred to the customer at the transaction price.</li><li><strong>Property, plant and equipment (IAS 16):</strong> Carried at cost less accumulated depreciation and impairment. Depreciation charged on straight-line basis over useful lives.</li><li><strong>Financial instruments (IFRS 9):</strong> Trade receivables and payables measured at amortised cost.</li><li><strong>Inventories (IAS 2):</strong> Valued at lower of cost (weighted average) and net realisable value.</li><li><strong>Leases (IFRS 16):</strong> Right-of-use assets and lease liabilities recognised for leases exceeding 12 months.</li><li><strong>Employee benefits (IAS 19):</strong> End-of-service benefits accrued in accordance with local labour law and actuarial estimates where applicable.</li></ul></div>';
+
+  var nn=2;
+  function ntbl(cols,rows,tot){return'<table class="nt"><tr>'+cols.map(function(c){return'<th>'+c+'</th>';}).join('')+'</tr>'+rows.map(function(r){return'<tr>'+r.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr>';}).join('')+'<tr class="ntt">'+tot.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr></table>';}
+
+  var ppe=sfp.NCA['Property, Plant and Equipment']||[];
+  if(ppe.length){var gross=ppe.filter(function(a){return a.net>0;}),dep=ppe.filter(function(a){return a.net<0;});var gT=gross.reduce(function(s,a){return s+a.net;},0),dT=dep.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  Property, Plant and Equipment</h4>'+ntbl(['Asset Category','Gross Cost<br>'+ctx.cu,'Accum. Dep.<br>'+ctx.cu,'Net Book Value<br>'+ctx.cu],gross.map(function(a){return[esc(a.name),fmt(a.net,r),'—',fmt(a.net,r)];}).concat(dep.map(function(a){return['<span style="color:var(--rd)">'+esc(a.name)+'</span>','—',fmt(-a.net,r),'—'];})),['Total',fmt(gT,r),fmt(-dT,r),fmt(gT+dT,r)])+'<p style="margin-top:7px;font-size:11.5px;color:var(--tx3);font-style:italic">Depreciation is charged on a straight-line basis over the estimated useful lives of the assets.</p></div>';}
+
+  function noteCA(li,title){var accs=sfp.CA[li]||[];if(!accs.length)return;var t=accs.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  '+title+'</h4>'+ntbl(['Description',ctx.cu],accs.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  noteCA('Trade and Other Receivables','Trade and Other Receivables');
+  noteCA('Inventories','Inventories');
+  noteCA('Cash and Cash Equivalents','Cash and Cash Equivalents');
+  noteCA('Prepayments and Deposits','Prepayments and Deposits');
+  noteCA('VAT and Tax Receivables','VAT and Tax Receivables');
+
+  function noteCL(li,title,neg){var accs=sfp.CL[li]||[];if(!accs.length)return;var t=accs.reduce(function(s,a){return s+(neg?-a.net:a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  '+title+'</h4>'+ntbl(['Description',ctx.cu],accs.map(function(a){return[esc(a.name),fmt(neg?-a.net:a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  var tpAll=[].concat(sfp.CL['Trade and Other Payables']||[]).concat(sfp.CL['Accrued Liabilities']||[]);
+  if(tpAll.length){var t=tpAll.reduce(function(s,a){return s+(-a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  Trade and Other Payables</h4>'+ntbl(['Description',ctx.cu],tpAll.map(function(a){return[esc(a.name),fmt(-a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  noteCL('VAT and Tax Payables','VAT and Tax Payables',true);
+  noteCL('Short-term Borrowings','Short-term Borrowings',true);
+  noteCL('Partner / Shareholder Accounts','Partner / Shareholder Accounts',true);
+
+  // NCL
+  Object.entries(sfp.NCL||{}).forEach(function(e){if(!(sfp.NCL[e[0]]||[]).length)return;var t=e[1].reduce(function(s,a){return s+(-a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  '+esc(e[0])+'</h4>'+ntbl(['Description',ctx.cu],e[1].map(function(a){return[esc(a.name),fmt(-a.net,r)];}),['Total',fmt(t,r)])+'</div>';});
+
+  // Admin breakdown
+  var allAdm=[];Object.values(is.ADMIN||{}).forEach(function(v){allAdm=allAdm.concat(v);});
+  if(allAdm.length>1){var t=allAdm.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  General and Administrative Expenses</h4>'+ntbl(['Description',ctx.cu],allAdm.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+
+  // COS breakdown
+  var allCos=[];Object.values(is.COS||{}).forEach(function(v){allCos=allCos.concat(v);});
+  if(allCos.length>1){var t=allCos.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  Cost of Revenue</h4>'+ntbl(['Description',ctx.cu],allCos.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+
+  h+='</div></div></div>';return h;
+}
+function noNotes(){return'<div class="wrap"><div class="pg"><div class="pgh"><div class="pgt"><h2>Notes</h2></div></div><div class="hrl"></div><div class="nb"><p style="font-family:sans-serif;font-size:13px;color:var(--tx3)">Notes disabled — enable in sidebar options.</p></div></div></div>';}
+
+// ═══════════════════════════════════════════════
+// SAMPLE DATA
+// ═══════════════════════════════════════════════
+function loadSample(){
+  APP.tbPrior=null;APP.mappingsPrior=[];APP.stmtsPrior=null;APP.learnedMappings={};APP.pyPeriod='';
+  var tb={accounts:[
+    {code:'111002',name:'Vehicles',endDebit:396217,endCredit:0,net:396217},
+    {code:'111003',name:'Accumulated Depreciation — Vehicles',endDebit:0,endCredit:39754,net:-39754},
+    {code:'111008',name:'Machinery and Equipment',endDebit:2399255,endCredit:0,net:2399255},
+    {code:'111009',name:'Accumulated Depreciation — Equipment',endDebit:0,endCredit:574425,net:-574425},
+    {code:'111014',name:'Furniture and Office Equipment',endDebit:32337,endCredit:0,net:32337},
+    {code:'111015',name:'Accumulated Dep — Furniture',endDebit:0,endCredit:5299,net:-5299},
+    {code:'121001',name:'Al Rahji Bank',endDebit:13530,endCredit:0,net:13530},
+    {code:'121002',name:'INMA Bank',endDebit:398,endCredit:0,net:398},
+    {code:'121004',name:'Petty Cash',endDebit:200,endCredit:0,net:200},
+    {code:'122001',name:'Inventory — Finished Goods',endDebit:92870,endCredit:0,net:92870},
+    {code:'122002',name:'Inventory — Raw Materials',endDebit:186526,endCredit:0,net:186526},
+    {code:'123001',name:'Accounts Receivables — Local',endDebit:620000,endCredit:0,net:620000},
+    {code:'124001',name:'Prepaid Expenses — Rent',endDebit:169687,endCredit:0,net:169687},
+    {code:'124002',name:'Prepaid Expenses — Insurance',endDebit:15265,endCredit:0,net:15265},
+    {code:'126003',name:'Retention Held By Customers',endDebit:7252,endCredit:0,net:7252},
+    {code:'127001',name:'Input VAT',endDebit:1200,endCredit:0,net:1200},
+    {code:'211001',name:'Local Suppliers',endDebit:0,endCredit:681870,net:-681870},
+    {code:'212001',name:'Accrued Salaries and Wages',endDebit:0,endCredit:383271,net:-383271},
+    {code:'212002',name:'Accrued GOSI',endDebit:0,endCredit:25311,net:-25311},
+    {code:'212003',name:'Accrued Expenses',endDebit:0,endCredit:45000,net:-45000},
+    {code:'214001',name:'Output VAT',endDebit:0,endCredit:117527,net:-117527},
+    {code:'214002',name:'Accrual VAT',endDebit:0,endCredit:116037,net:-116037},
+    {code:'214003',name:'Accrual WHT',endDebit:0,endCredit:1490,net:-1490},
+    {code:'321001',name:'Share Capital',endDebit:0,endCredit:500000,net:-500000},
+    {code:'311001',name:'Retained Earnings',endDebit:0,endCredit:850000,net:-850000},
+    {code:'411001',name:'Revenue — Contracting Services',endDebit:0,endCredit:2850000,net:-2850000},
+    {code:'412001',name:'Revenue — Product Sales',endDebit:0,endCredit:450000,net:-450000},
+    {code:'511001',name:'Cost of Services — Labour',endDebit:920000,endCredit:0,net:920000},
+    {code:'512001',name:'Cost of Services — Materials',endDebit:380000,endCredit:0,net:380000},
+    {code:'519001',name:'Depreciation — Operations',endDebit:245000,endCredit:0,net:245000},
+    {code:'611001',name:'Salaries — Admin',endDebit:185000,endCredit:0,net:185000},
+    {code:'612001',name:'Social Insurance (GOSI) — Admin',endDebit:22500,endCredit:0,net:22500},
+    {code:'614001',name:'Utilities and Technology',endDebit:45000,endCredit:0,net:45000},
+    {code:'615001',name:'Professional Fees — Audit and Legal',endDebit:28000,endCredit:0,net:28000},
+    {code:'617001',name:'Bank Fees and Charges',endDebit:3800,endCredit:0,net:3800},
+    {code:'618001',name:'Rent Expenses — Office',endDebit:85000,endCredit:0,net:85000},
+    {code:'619001',name:'Car Rental and Vehicle Expenses',endDebit:12000,endCredit:0,net:12000},
+    {code:'613002',name:'Iqama and Residence Permit Fees',endDebit:8500,endCredit:0,net:8500},
+    {code:'613003',name:'GOSI — Government Registration Fees',endDebit:3200,endCredit:0,net:3200},
+    {code:'619002',name:'EOSB Expense — Admin',endDebit:14000,endCredit:0,net:14000},
+  ],sections:['Assets','Liabilities','Equity','Revenue','Expenses'],companyName:'Elm Wooden Industries Company',period:'Year ended 31 December 2025',currency:'SAR'};
+  APP.tb=tb; APP.overrides={}; APP.stmts=null;
+  APP.mappings=smartMap(tb.accounts);
+  document.getElementById('co').value=tb.companyName;
+  document.getElementById('pe').value=tb.period;
+  setCurrency(tb.currency);
+  sbox('fi','nf','📊 Sample data loaded ('+tb.accounts.length+' accounts)');
+  sbox('ps','ok','✓ Parsed '+tb.accounts.length+' accounts — '+countSecs(APP.mappings)+' IFRS categories');
+  document.getElementById('mp').style.display='none';
+  document.getElementById('gb').disabled=false;
+  document.getElementById('exBtn').disabled=false;
+  setSteps(2);
+  showMappingTab();
+}
+</script>
+</body>
+</html>
