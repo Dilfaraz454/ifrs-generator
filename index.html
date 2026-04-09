@@ -1323,6 +1323,18 @@ function filterMR(q,sec){
 }
 
 // Cascade: Statement changed
+// ── DEBOUNCE: only persist to Supabase after user stops changing for 600ms ──
+var _saveDebounceTimers={};
+function debouncedPersist(accountName,stmt,sec,li){
+  var key=normName(accountName);
+  if(_saveDebounceTimers[key])clearTimeout(_saveDebounceTimers[key]);
+  _saveDebounceTimers[key]=setTimeout(function(){
+    delete _saveDebounceTimers[key];
+    lsSaveRule(accountName,{statement:stmt,section:sec,lineItem:li});
+    updateRulesCount();
+  },600);
+}
+
 function onStmt(sel){
   var tr=sel.closest('tr');
   var code=tr.dataset.code,stmt=sel.value;
@@ -1334,7 +1346,7 @@ function onStmt(sel){
   var liSel=tr.querySelector('.li-sel');
   liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
   liSel.value=li;
-  saveOv(tr,code,stmt,sec,li,false); // cascade only — no DB save yet
+  saveOv(tr,code,stmt,sec,li,true);
 }
 // Cascade: Section changed
 function onSec(sel){
@@ -1345,14 +1357,14 @@ function onSec(sel){
   var liSel=tr.querySelector('.li-sel');
   liSel.innerHTML=items.map(function(x){return'<option value="'+esc(x)+'">'+esc(x)+'</option>';}).join('');
   liSel.value=li;
-  saveOv(tr,code,stmt,sec,li,false); // cascade only — no DB save yet
+  saveOv(tr,code,stmt,sec,li,true);
 }
-// Line item changed — ONLY this triggers a Supabase save
+// Line item changed
 function onLi(sel){
   var tr=sel.closest('tr');
   var code=tr.dataset.code;
   var stmt=tr.querySelector('.stmt-sel').value,sec=tr.querySelector('.sec-sel').value,li=sel.value;
-  saveOv(tr,code,stmt,sec,li,true); // persist=true
+  saveOv(tr,code,stmt,sec,li,true);
 }
 
 function saveOv(tr,code,stmt,sec,li,persist){
@@ -1379,8 +1391,7 @@ function saveOv(tr,code,stmt,sec,li,persist){
     APP.overrides[code]={statement:stmt,section:sec,lineItem:li};
     // ── AUTO-SAVE TO LOCALSTORAGE ──
     if(accountName&&persist){
-      lsSaveRule(accountName,{statement:stmt,section:sec,lineItem:li});
-      updateRulesCount();
+      debouncedPersist(accountName,stmt,sec,li);
     }
     tr.classList.add('ov-row');tr.classList.remove('learned-row','saved-row');
     tr.dataset.sec=sec;
