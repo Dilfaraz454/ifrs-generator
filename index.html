@@ -6,6 +6,7 @@
 <title>IFRS Financial Statements Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -363,95 +364,98 @@ supaInit();
 // Priority: MANUAL > PY-LEARNED > STORED(Supabase) > AUTO
 // ═══════════════════════════════════════════════
 
-// ── PASTE YOUR SUPABASE CREDENTIALS HERE ────────────────────────────────────
+// ── SUPABASE CREDENTIALS ─────────────────────────────────────────────────────
 var SUPA_URL = 'https://bqwhcgwlloqunyjrxzxm.supabase.co';
 var SUPA_KEY = 'sb_publishable_mLY8uBKK5o75SN6jIQi5ag_cINtvQi0';
-// ────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ── SUPABASE HELPERS (fire-and-forget; never block the UI) ──────────────────
+// ── SUPABASE HELPERS using the official JS client (loaded via CDN in <head>) ─
+
+function getSupaClient(){
+  if(window._supaClient)return window._supaClient;
+  if(window.supabase&&window.supabase.createClient){
+    window._supaClient=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    return window._supaClient;
+  }
+  return null;
+}
 
 async function supaInit(){
-  // Load ALL saved rules from Supabase into the in-memory cache at startup.
+  var db=getSupaClient();
+  if(!db){
+    // SDK not loaded yet — fallback to localStorage backup
+    try{var bk=localStorage.getItem('ifrs_rules_backup');if(bk){APP.rulesCache=JSON.parse(bk);updateRulesCount();}}catch(e){}
+    return;
+  }
   try{
-    var r=await fetch(SUPA_URL+'/rest/v1/learned_rules?select=*',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    var res=await db.from('learned_rules').select('*');
+    if(res.error)throw res.error;
+    APP.rulesCache={};
+    (res.data||[]).forEach(function(row){
+      APP.rulesCache[row.account_key]={
+        originalName   : row.original_name,
+        statement      : row.statement,
+        section        : row.section,
+        lineItem       : row.line_item,
+        count          : row.count,
+        pinToLatest    : row.pin_to_latest,
+        history        : row.history||[],
+        savedAt        : row.saved_at,
+        latestStatement: row.latest_statement,
+        latestSection  : row.latest_section,
+        latestLineItem : row.latest_line_item
+      };
     });
-    if(r.ok){
-      var rows=await r.json();
-      APP.rulesCache={};
-      rows.forEach(function(row){
-        APP.rulesCache[row.account_key]={
-          originalName : row.original_name,
-          statement    : row.statement,
-          section      : row.section,
-          lineItem     : row.line_item,
-          count        : row.count,
-          pinToLatest  : row.pin_to_latest,
-          history      : row.history||[],
-          savedAt      : row.saved_at,
-          latestStatement: row.latest_statement,
-          latestSection  : row.latest_section,
-          latestLineItem : row.latest_line_item
-        };
-      });
-      APP.supaLoaded=true;
-      // Refresh counts once data arrives
-      updateRulesCount();
-      if(APP.tb)renderMappingPanel();
-    }
+    APP.supaLoaded=true;
+    updateRulesCount();
+    if(APP.tb)renderMappingPanel();
+    console.log('[IFRS] Loaded',Object.keys(APP.rulesCache).length,'rules from Supabase.');
   }catch(e){
-    // Offline fallback: try the localStorage backup copy
+    console.warn('[IFRS] supaInit failed, using local backup.',e);
     try{var bk=localStorage.getItem('ifrs_rules_backup');if(bk)APP.rulesCache=JSON.parse(bk);}catch(e2){}
   }
 }
 
 async function supaSyncRule(key,ruleData){
-  // Upsert a single rule row in Supabase (called after every correction).
+  var db=getSupaClient();
+  if(!db){try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}return;}
   try{
-    await fetch(SUPA_URL+'/rest/v1/learned_rules',{
-      method:'POST',
-      headers:{
-        'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,
-        'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'
-      },
-      body:JSON.stringify({
-        account_key    : key,
-        original_name  : ruleData.originalName||'',
-        statement      : ruleData.statement,
-        section        : ruleData.section,
-        line_item      : ruleData.lineItem,
-        count          : ruleData.count,
-        pin_to_latest  : ruleData.pinToLatest||false,
-        history        : ruleData.history||[],
-        saved_at       : ruleData.savedAt||new Date().toISOString().split('T')[0],
-        latest_statement: ruleData.latestStatement||ruleData.statement,
-        latest_section  : ruleData.latestSection||ruleData.section,
-        latest_line_item: ruleData.latestLineItem||ruleData.lineItem,
-        updated_at     : new Date().toISOString()
-      })
-    });
-    // Always keep an offline backup in localStorage
+    var res=await db.from('learned_rules').upsert({
+      account_key    : key,
+      original_name  : ruleData.originalName||'',
+      statement      : ruleData.statement,
+      section        : ruleData.section,
+      line_item      : ruleData.lineItem,
+      count          : ruleData.count,
+      pin_to_latest  : ruleData.pinToLatest||false,
+      history        : ruleData.history||[],
+      saved_at       : ruleData.savedAt||new Date().toISOString().split('T')[0],
+      latest_statement: ruleData.latestStatement||ruleData.statement,
+      latest_section : ruleData.latestSection||ruleData.section,
+      latest_line_item: ruleData.latestLineItem||ruleData.lineItem,
+      updated_at     : new Date().toISOString()
+    },{onConflict:'account_key'});
+    if(res.error)throw res.error;
     try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}
-  }catch(e){console.warn('[IFRS] Supabase sync failed — rule cached locally only.',e);}
+  }catch(e){console.warn('[IFRS] Supabase sync failed — cached locally.',e);}
 }
 
 async function supaDeleteOne(key){
+  var db=getSupaClient();
+  if(!db)return;
   try{
-    await fetch(SUPA_URL+'/rest/v1/learned_rules?account_key=eq.'+encodeURIComponent(key),{
-      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
+    var res=await db.from('learned_rules').delete().eq('account_key',key);
+    if(res.error)throw res.error;
     try{localStorage.setItem('ifrs_rules_backup',JSON.stringify(APP.rulesCache));}catch(e){}
   }catch(e){console.warn('[IFRS] Supabase delete failed.',e);}
 }
 
 async function supaDeleteAll(){
-  // Deletes every row that belongs to this anonymous user.
-  // Because RLS allows all, this clears the shared table — fine for single-user setup.
-  // For multi-user you would add a user_id filter here later.
+  var db=getSupaClient();
+  if(!db)return;
   try{
-    await fetch(SUPA_URL+'/rest/v1/learned_rules?id=not.is.null',{
-      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    });
+    var res=await db.from('learned_rules').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    if(res.error)throw res.error;
     try{localStorage.removeItem('ifrs_rules_backup');}catch(e){}
   }catch(e){console.warn('[IFRS] Supabase clear-all failed.',e);}
 }
