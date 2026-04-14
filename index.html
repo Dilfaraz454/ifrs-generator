@@ -262,7 +262,10 @@ table.tb th.py-h{color:var(--tx3);font-style:italic}
     </div>
 
     <div class="sh">
-      <div class="shd">Prior Year <span class="py-tag">OPTIONAL</span></div>
+      <div class="shd" style="display:flex;align-items:center;justify-content:space-between;padding-right:18px">
+          <span>Prior Year <span class="py-tag">OPTIONAL</span></span>
+          <button onclick="downloadPYTemplate()" title="Download the standardised Prior Year input template" style="background:rgba(192,154,62,.15);border:1px solid rgba(192,154,62,.35);color:var(--gd2);padding:3px 9px;border-radius:5px;font-size:10px;font-family:sans-serif;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:.15s;" onmouseover="this.style.background='rgba(192,154,62,.28)'" onmouseout="this.style.background='rgba(192,154,62,.15)'">⬇ Template</button>
+        </div>
       <div class="sbd">
         <div class="uz uz-sm" id="uzPY">
           <div class="uzi" style="font-size:18px;margin-bottom:3px">📑</div>
@@ -357,6 +360,24 @@ var APP = {
   rulesCache:{},      // in-memory mirror of Supabase learned_rules table
   supaLoaded:false    // true once the initial Supabase fetch has completed
 };
+
+// ── EMBEDDED PRIOR YEAR TEMPLATE (base64-encoded .xlsx) ─────────────────────
+var PY_TEMPLATE_B64='UEsDBBQAAAAIAFqqiVxGx01IlQAAAM0AAAAQAAAAZG9jUHJvcHMvYXBwLnhtbE3PTQvCMAwG4L9SdreZih6kDkQ9ip68zy51hbYpbYT67+0EP255ecgboi6JIia2mEXxLuRtMzLHDUDWI/o+y8qhiqHke64x3YGMsRoPpB8eA8OibdeAhTEMOMzit7Dp1C5GZ3XPlkJ3sjpRJsPiWDQ6sScfq9wcChDneiU+ixNLOZcrBf+LU8sVU57mym/8ZAW/B7oXUEsDBBQAAAAIAFqqiVx9FnpJ7wAAACsCAAARAAAAZG9jUHJvcHMvY29yZS54bWzNksFOwzAMhl8F5d46bWGCqOsFxAkkJCaBuEWOt0Vr2igxavf2pGXrhOABOMb+8/mz5Bq9wj7QS+g9BbYUr0bXdlGhX4s9s1cAEffkdMxTokvNbR+c5vQMO/AaD3pHUEq5AkesjWYNEzDzC1E0tUGFgTT34YQ3uOD9Z2hnmEGglhx1HKHICxDNNNEfx7aGC2CCMQUXvwtkFuJc/RM7d0CckmO0S2oYhnyo5lzaoYD356fXed3MdpF1h5R+Rav46GktzpPfqvuHzaNoSlmuMnmdybtNWajiVt1UH5PrD7+LsOuN3dp/bHwWbGr4dRfNF1BLAwQUAAAACABaqolcmVycIxAGAACcJwAAEwAAAHhsL3RoZW1lL3RoZW1lMS54bWztWltz2jgUfu+v0Hhn9m0LxjaBtrQTc2l227SZhO1OH4URWI1seWSRhH+/RzYQy5YN7ZJNups8BCzp+85FR+foOHnz7i5i6IaIlPJ4YNkv29a7ty/e4FcyJBFBMBmnr/DACqVMXrVaaQDDOH3JExLD3IKLCEt4FMvWXOBbGi8j1uq0291WhGlsoRhHZGB9XixoQNBUUVpvXyC05R8z+BXLVI1lowETV0EmuYi08vlsxfza3j5lz+k6HTKBbjAbWCB/zm+n5E5aiOFUwsTAamc/VmvH0dJIgILJfZQFukn2o9MVCDINOzqdWM52fPbE7Z+Mytp0NG0a4OPxeDi2y9KLcBwE4FG7nsKd9Gy/pEEJtKNp0GTY9tqukaaqjVNP0/d93+ubaJwKjVtP02t33dOOicat0HgNvvFPh8Ouicar0HTraSYn/a5rpOkWaEJG4+t6EhW15UDTIABYcHbWzNIDll4p+nWUGtkdu91BXPBY7jmJEf7GxQTWadIZljRGcp2QBQ4AN8TRTFB8r0G2iuDCktJckNbPKbVQGgiayIH1R4Ihxdyv/fWXu8mkM3qdfTrOa5R/aasBp+27m8+T/HPo5J+nk9dNQs5wvCwJ8fsjW2GHJ247E3I6HGdCfM/29pGlJTLP7/kK6048Zx9WlrBdz8/knoxyI7vd9lh99k9HbiPXqcCzIteURiRFn8gtuuQROLVJDTITPwidhphqUBwCpAkxlqGG+LTGrBHgE323vgjI342I96tvmj1XoVhJ2oT4EEYa4pxz5nPRbPsHpUbR9lW83KOXWBUBlxjfNKo1LMXWeJXA8a2cPB0TEs2UCwZBhpckJhKpOX5NSBP+K6Xa/pzTQPCULyT6SpGPabMjp3QmzegzGsFGrxt1h2jSPHr+BfmcNQockRsdAmcbs0YhhGm78B6vJI6arcIRK0I+Yhk2GnK1FoG2camEYFoSxtF4TtK0EfxZrDWTPmDI7M2Rdc7WkQ4Rkl43Qj5izouQEb8ehjhKmu2icVgE/Z5ew0nB6ILLZv24fobVM2wsjvdH1BdK5A8mpz/pMjQHo5pZCb2EVmqfqoc0PqgeMgoF8bkePuV6eAo3lsa8UK6CewH/0do3wqv4gsA5fy59z6XvufQ9odK3NyN9Z8HTi1veRm5bxPuuMdrXNC4oY1dyzcjHVK+TKdg5n8Ds/Wg+nvHt+tkkhK+aWS0jFpBLgbNBJLj8i8rwKsQJ6GRbJQnLVNNlN4oSnkIbbulT9UqV1+WvuSi4PFvk6a+hdD4sz/k8X+e0zQszQ7dyS+q2lL61JjhK9LHMcE4eyww7ZzySHbZ3oB01+/ZdduQjpTBTl0O4GkK+A226ndw6OJ6YkbkK01KQb8P56cV4GuI52QS5fZhXbefY0dH758FRsKPvPJYdx4jyoiHuoYaYz8NDh3l7X5hnlcZQNBRtbKwkLEa3YLjX8SwU4GRgLaAHg69RAvJSVWAxW8YDK5CifEyMRehw55dcX+PRkuPbpmW1bq8pdxltIlI5wmmYE2eryt5lscFVHc9VW/Kwvmo9tBVOz/5ZrcifDBFOFgsSSGOUF6ZKovMZU77nK0nEVTi/RTO2EpcYvOPmx3FOU7gSdrYPAjK5uzmpemUxZ6by3y0MCSxbiFkS4k1d7dXnm5yueiJ2+pd3wWDy/XDJRw/lO+df9F1Drn723eP6bpM7SEycecURAXRFAiOVHAYWFzLkUO6SkAYTAc2UyUTwAoJkphyAmPoLvfIMuSkVzq0+OX9FLIOGTl7SJRIUirAMBSEXcuPv75Nqd4zX+iyBbYRUMmTVF8pDicE9M3JD2FQl867aJguF2+JUzbsaviZgS8N6bp0tJ//bXtQ9tBc9RvOjmeAes4dzm3q4wkWs/1jWHvky3zlw2zreA17mEyxDpH7BfYqKgBGrYr66r0/5JZw7tHvxgSCb/NbbpPbd4Ax81KtapWQrET9LB3wfkgZjjFv0NF+PFGKtprGtxtoxDHmAWPMMoWY434dFmhoz1YusOY0Kb0HVQOU/29QNaPYNNByRBV4xmbY2o+ROCjzc/u8NsMLEjuHti78BUEsDBBQAAAAIAFqqiVwzJbbvcAUAAF4PAAAYAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sjVdrb9pKEP0rI67UJlIuBvOmSSTCI0U3TRCQW/XT1WIPsKrtdXfXJfz7O7s2hqbGRcpjPbtnZs7Z2dftTsjvaouo4S0MInVX2Wod9x1HeVsMmaqKGCPqWQsZMk2fcuOoWCLzLSgMHLdWazsh41Hl/tbaZvL+ViQ64BHOJKgkDJncP2AgdneVeuVgmPPNVhuDc38bsw0uUL/GM0lfTu7F5yFGiosIJK7vKoN6/7HeMQA74l+OO3XSBrUVu0fJ/SeKTERqFTDkVkJ8N91T35hoPAboaeOU0b+fOMQgML4psx9ZmEqehQGetg/xJlYOordiCoci+Mp9vb2rdCvg45olgZ6L3WfMKLaMP08Eyv6FXTq24VbAS5QWYQamDEIepf/ZWybNCaBZOwNwM4D7DuCei9DIAI13gHrzDKCZAZqXAloZoHUpoJ0B2lb7VCyr9Ihpdn8rxQ6kGU3eTMNOl0WTwDwytbbQkno54fT9dDJfwExyIeEbMgnGCXz4q+vW3U+w0CzymfS5Qh+mUZxoWGIYB0zjraMpuvHhePRLUfPQbuWdofHe0MyTa9rk3DPJTXgQAI9AbxH2VHyEXnMMfFWF1zgQzKcersgWIDAFH488PhrYhEfEQCPxE9WShNt5Om2bTuNcOtPx0+hXPxb2UA57fJ2OBs/DcQFymCKbZ5DfXl7nMH5ezr+BmZNWj+ZkbTTZoiybgU5OqGP9t874H+QzPRRhzKI9PLMQiximftpn/IwjjRLWCWUW4IYFEBW7GaZuOr+5+Y1BN2fQLWXwkDOYYyyk5tEGZkhl4Bex6JaywOqmCukqwMinim/UYYQehisi59bcRhGj7qWMejmjXimj4XFOEikx8vZFTHqlTBaDOTgwGI/o7+wf035dmPb4dV7EoXcph3rtuKvUSlmMchYziTGTKItYZE7O0XiJzeHDgr6tJxBriM87G2bOLqHhHmm4FtQ9k8Hnl6+wfCH1xrD8PF3Acvxl9jRYjkvWXp22AXOWud3D/p2fbseoDRu1dyZqncpw+QDpXeNKZCrAirbfWOxQ0kK7zvWNmaIdbi8SSeqY7W9vClhLbhAsYJGHVVreQRJGMIA7GHieSCJNJh9v4OHEYtb+DQzJstzHCFcDpSi+A0+crXjA9d5U0I8kbczxJ0YJGtMb3XsUXt/AiKAjXHENLDQeb2BMlqFEPzeVbcPmxPujcs1S5VxSbjGZZdIdJFqfHCMPqSSwsCMMHrjGMEtPmWFeKtYIrtIz57oKL1Gwp03B7HLGyZqb+VjzTSIRYjLaU/To7MpuJVpoGjWbjSFC0iISGjZSKOX4GIMyhUxnE/k9pJkohOeX5Xjx32i8HEyfgG6SFI7p61LVWheo1ipVrUGqUXEXizaNPEGLzx6kdMf8g2almbYvyLRdmmmTMv1FouKcWVrRfwdUpAHdMzXjgVUTmbc9rIoMSzccmH1gYfzp6UitCktzsaCfHekPG4zQTJays++Zs5I+6Uac1YCRQHGfpk/YQcJcPSiGWYO5cKpUm84F2nRKtWmZ2mc/aQlTkhEk6QXpT9ciIkpK7JWZzx3J14crdk2nOJO5jODR4I2QXDGzE9F9S4qQNqgbuFpdQ2xOfXyjF0KhMHYsLUlnuqDx3nWuZXpdOIWk4rGEyJPBY0GwL5TMObnthig39l2iwOZq998T8+E51KD3kL3Dv+sZ9vqTXoHdPKCKxtMGRJ6ahT2dw5vrfYxuf9ItRLiEcIt6KEhRjGG7P2kX2Tv9SVFkWk4UoQhBWwL1tIp81Wv9CZ2l5nFxVDd9eX5hckOVTuWxJqVr1Q7tKzIt0/RDi9g+NVZC0yza5pYewCjNAOpfC5rj7MMEyJ/U9/8DUEsDBBQAAAAIAFqqiVyNkHbWZwQAABoTAAAYAAAAeGwvd29ya3NoZWV0cy9zaGVldDIueG1sjZjvb/I2EMf/FYtJ0yZN5AeE0qcUqaWwTeseVW23vTbJQawmcR7bQPnvd05CSokdty+K49z3fP7k4vg8O3DxJlMARd7zrJC3g1Sp8pvnyTiFnMohL6HAOxsucqrwUmw9WQqgSSXKMy/0/YmXU1YM5rOq70nMZ3ynMlbAkyByl+dUHO8h44fbQTA4dTyzbap0hzeflXQLL6D+KZ8EXnmtl4TlUEjGCyJgczu4C76tgrEWVBb/MjjIszaRKT/8LljyiCPjRPwB0ZNbc/6mb/+Z6C60hwxipZ1S/NnDArJM+8bIfjTDDNootPC8fRpvVeHA6a2phAXP/mOJSm8H0wFJYEN3mXrmhz+gmWKk/cU8k9V/cqhtg8mAxDupeN6IMYKcFfUvfW/QnAnGvkUQNoLwQhBMLYJRIxhdCmwhjRvB+KuCqBFEF4LQFtKkEUwq9jWsivQDVXQ+E/xAhLZGb7pRPS68RiRImBU62V6UwNsMhWp+F8d8Vyiy4AnMPIUudb8XN/L7L8q/09wkXzjkr8fSJHtwyB5gzRS5y/XQBvnSIV8ISPr0K4f+O1cgP+s85N7CD1v4Ye0o6Dj6AOw2WVhNmmcgJS5KHnlkdM0ypo7YXv7Y1Y1n2EOxA931jguUNOJ2x7B0m6x6TT4BGrWARrUmtEwt8P3AlJWNbGR7wFSmhBXknhZvpqx0yCugJk6Nblzp9DK+n0c+/s28/Tkrg9mFycoaQYfVuGU17o8aWYUmVg7Zq6AJYJrEwPZ0nV0mdg3M4cMKbNwlEYQGYga7S2LWEDrEopZY1B92aMkuh6wm9kSPVlwOB+2LakIWOVEsDSbTLtSVNYoOsUlLbOIkZswxhwy/EmIHCXmhGRXMzMzhopfZxM3MYBJGXWbWKDrMrlpmV/2RjyxZ5pC9pFQAWdCSKZqZgDn09RfAROvKTctgEviGFLPG0ME1bXFNnbiMKeaQPYPCnTXm2JKKghVbY445fNiRTd3IDCYTQ4JZQ+gQu26JXfeHPbYkmEN22hn8/NM0DMIb8gJiz2LjLu5rnkzgrt3gDCaRKdesQXTIBf7H7tfvDz2ysHPpFlwqwjcnaLKl+EjXfCeMW2GHy5792Un6afUyMFqaDC852uPogjwrI4L+6Cc2kA7d6ZPQArxLsMwx8nN46uMXfOmLuTTZdfBZw+ji+ygEgtCJz7jquXTPgMWXfeYLl74PWtiFMTJBM9h1oFnD6EJDP/owYBSeCuD2eOCDZrMZjCyzwlyKrkc3uKstMxoDkTQvMyA4giT4fu4Bq2yVkiO+qfpsY0czUgrGBTkCFUQJhh1rTMwihiH5C6AkKeCeT2gPJMDKQqFqSB4gA9W4Dav8DW6CkPzSDJdgQf7rb0SlUJCSSrSsBny9J1JRofAjRaiqXI6GpmrSOyvrcxDb6gBGkqrgrmm0vadjn/Hp3Mf7ENSnRn9TsWWFJBlsUOwPr5CdqLnWF4qX1SHDmitkXjXrSWsDvL/hWPU2F3qA9jhs/j9QSwMEFAAAAAgAWqqJXLxZDvgiCAAAkysAABgAAAB4bC93b3Jrc2hlZXRzL3NoZWV0My54bWyVWm1v4rgW/isWK6260p2B2GGAbqcSL+luJKawQHc0n65cMBBtXhjH0OGqP/4e56XDto59+mGmkPj4+Hni+Hl88M1TJv/J90Io8iOJ0/xza6/U4brdztd7kfD8Y3YQKdzZZjLhCr7KXTs/SME3RVASt2mn86md8Cht3d4U1+by9iY7qjhKxVyS/JgkXJ5HIs6ePre8Vn1hEe32Sl9o394c+E4shXo4zCV8a7/0sokSkeZRlhIptp9bQ+866BYBRYu/I/GUX3wm+T57+kNGmylkBiCdFtHgHrPsH3073OhL0F7EYq10pxz+nMRYxLHuG0b2vUrTehmFDrz8XOe7K+gAeI88F+Ms/hpt1P5zq98iG7Hlx1gtsqc/RQWxq/tbZ3Fe/E+eyrY+bZH1MVdZUgXDCJIoLf/yHxU1FwFepyGAVgH0VQBrCmBVAHsVQJuG5FcBfsFMCaXgYcIVv72R2RORRWuNl/brXl4YANrXukXBMnz/1CJwOUr1HFkqCbcj6FHdLlfDVfAluF+R2R25C++H9+NwOCXz2TJchbN7cjWXUSbJN8HlbzdtBWPRce01/IMxvAyEvuSjZb5eQ767KI5JlBJAdExSMiFXZ5gN2dNvwIjak0OR7QzZCE+yYwrzn0wFPwnyPyEzEm1JminCD4c4WvPHWHy0jMl3k+OXg+03DDa8WyzJNLwPSAgkkatNVqRf73m6E6/oKDocOTq8z5QgvxgCx5iRjLkSu0yeyYrvDH1Mqj4GDX3MF+FsQb4FwwUZfpk9wCMnv/7S7w7o70SkSkiyF1JY+OxWfHaa+ewWI9AtjCMYLpfBaqmzUg+y3mfph/FRSshuSfupTOtZHuOnMq3XBFzCkirV+T9kHvMUpk+6IcH3Y3RI3mQun2LVH23oj5oeYBXDmp78ePg8nwemx1ZF+kWkXtNPt52b9slARc9NRc9OxZgfIsVj8hWWaf0aAjU7KfLcxELPzgIzsdBzszD+Gs5NNPTQNPTdNPTtNISpglc4ggWEDPNcKCP+vh2/b8Lfd+P/mduUddJH0zBw0zCw01A4gg/Z9sNDbiNi0ETET9wDN+7F7MGEd4DGq9XYBVi3sSGeZunuA6x1CQnTk8iVXgGMmOuObKDrNjbU01VoQl2HYmB7CNieHfZEbAWssxtQjh/lgzZi9hCYPTfmyWpoxOzhMVMEZmrHPFOgZ5caY5nhdV9W5NSNvMhpxE7x2BkCOyu76zaMZZXpRR6JverrrUO8wF61aXJ1GvtqthpOjdir4D40394uH75cTbrXwAgYqK3moYEGhN3w3uc33F7DQ5gNz+E2xjzfFxaj+KB9xonHjcuMw2r0TCLjObyGFlnIbXwWeLPhIdyG57AbK8k3oiCjfBsXYi2AjgbtG3kOy9E3suHwHFp6rGknHt56eAjv4TnNxwmmQyajBhIcvmNgJMFhPArfYUs78fDGw0M4D89hPeZSHPi5kN9ifkzEIcujhpek0YCUfXkdIyUOT6IN+c9BGCnBexOK8CbU4U3+Hq4KKrRGO14UinAn1OFOAD9khEQnE3aKNygUYVCow6CUy4NbrCjColCHRal1emx0KRTvUijCpVCKUWoEcOpW6bpNk0rbRLqOvRBpD1SaenaVpr5bpalvV+liTKTUaluJqYtguzIETSWQ5lQVy2U8ezvUC5arNo2ap3P8tzHHpI6niAnWQ7Dbs7Mb/PUQrr7ZeEVIGnVI2nLPpSBVccFIrEPUPM+0hFOHqgXPRWLIayQar2gUoWjUtZkWisOlDQm4TKN0l5M2Ga7Xx+Qjmf/Kk8PvpvduRF3aZiw2UYe2BWB5VD0OIzd4aWMIaWMOaavdXy7kyaxoDKFozKFoGnVjhgnDKxpDKBpzKNqcS5UC6DYp5ug+izfwDSZEUdU2UoDQNubQtuC5ymumAK9tDKFtDKVtegekzkbACE1jDk0LmiWNvZU02rsGEuySxhCSxhySNg2Ho3AarsLgvdVuhlA51sUWuUaZhH4bFoFR3Y91wnVdVY/p83RV5jE+hC5+yiE238yx+Z4KngsyjfhjFEcKtjrk6oJ34082rHELfsGCs7oPLOjURgrwe26G2HMzx547SA5xdhaCjEQqtpHSNf5TpH/TNU+Cxj33BXxnWX/6HMyWIyN6/OaaIZwIcziRf1U663lgXn0aLckFcGc9f/o8WZlXH7z7YAj3wQbvrfhdvARG+APE4jtwlf2mluV38Gb5ZT4sv3378ut77uXX996//LqXXh8heb6j6Py64DXn58ZNvN9YdK6sn/EXNt9RhoZHYkk68fGFaB9RiPaZnQ/wO/IIb6NjMtbdNFJh/LGtjrJQUeU3MsHwTPgIJnzXFimTCqPKdUe2daluY0G+tIhyHY6BjvAjvsOPXBa2rC8Ewo/4Dj8CyCFdlcWIHW9IfIQh8R2G5EWPFuIk0qNpSCMf4UB8V80fhKhKBZmMwPE2xEfYEN9hQ/5d0XO9/wgT4rvq/NOqrGdUIx9vQ3yEDfH77ynrudD33VJct2ms7VmUuI69UGLfuwZK7Erc7SAO/HQwtb2yBkWKKgi5EGfbYSPEFrzrYap9uOTlk6h6tNb/6jb2+l/wl/FR1MG24l/74pxfIuSuOC+Zk6JwoE99XFytTmmCrwpYcVLw9Z1u5zqAZ2S4QyGGGmMo3DBd97rXQXmy8vUdmE2B7xljIMQ4LhiWMXcPkveKM48/oZfHVb9wuYvSnMRiCzR0Pvbg3ZPllCi/qOxQnIh8zBRMl/JwpAA7JnUDuL/NMlV/0QlezuHe/h9QSwMEFAAAAAgAWqqJXGkiK7pBBwAASiQAABgAAAB4bC93b3Jrc2hlZXRzL3NoZWV0NC54bWyNWl1v4jgU/SsWK606DzsQJ1BgWyQKoYPUAgI6O7NvLhiIGmLWMaVd9cfvdT5atuPY92GmJPh+nGPH516Tq5OQT+mOc0Ve9nGSXtd2Sh269Xq62vE9S7+KA0/gm42Qe6bgUm7r6UFyts6M9nGdNhqt+p5FSa13ld2byd6VOKo4SvhMkvS43zP5esNjcbquebXyxjza7pS+Ue9dHdiWL7h6OMwkXNXfvayjPU/SSCRE8s11re91wyDQBtmI7xE/pWefSboTp1sZre8gMgBp1IgG9yjEk/56vNa3YDyP+Upppwz+PPMBj2PtGzL7pwhTe89CG55/LuONMjoA3iNL+UDEf0VrtbuutWtkzTfsGKu5OH3jBcSm9rcScZr9T0752IDWyOqYKrEvjCGDfZTkf9lLQc2ZgdeoMKCFAf1k4FcZ+IWB/8mAVqUUFAYZ+fUcSsbDkCnWu5LiRGQ2WuOl7dLLOwNA+0qPyFiG61aNwO0o0WtkoSR8HYFH1Vss+8vwPpwsyXREZvPpaAyf5uRuuliQi5mMhCQ/OZNfruoK8tA29RX8g/jvSdD3WDSPdVkRaxTFMYkSAmiO+4QMycUrrARx+gJsqB05ZNFeIRphe3FMYO2TO86eOfmXS0GiDUmEIuxwiKMVe4z5V0tOgZuYIE+2XZHseDRfkLvxJCRjIIhcrEUWfrVjyZZ/oiNzeONwOBGKk98MhgNMJgOm+FbIV7JkW4OPYeGjU+FjNh/DrP4M+3PSv58+wHST339rNzv0T8ITxSXZccktfDYLPhvVfDazDPQIYwbz8Hs4eQgtMVp5DM8yZ608hlcVgz/z5MhNk1NY0gpLr2mamMLIr5qYxRugequOOiwcBJkDvV0/9xpX9WcD+Es3+Es7+AWXz9GKEwsJl1UkfEC+REEuYkEoE+pLNOq2G3Xbjnomxfq4UmTBYp7asLfd2Nso7EXELKAJfRuNvuNG37Gjnyp4bm2oO27UHRTqLFLFfHfQiLWguiDrMdpdsyKhpVAstmEuHfwqeR+gyzFVUlWgXk6X/TsT5NK+DRab3uLh/mLY7A47oAsbDb8CPXXvoh61b6OD6SKTavd26vkIrn37+rpjj+IoyUCkKtWCQT0QDH1FxIZUPQE3pVfbqivHWJYdQH3LEzDOgI9fdQGCicDOxD3or4xg4WVcGFEHCNQBCnUZzLi/lD4wwJsI4E2HrBwf/1iJREmo3YW0wG8i4DdR8CFkGdFIQBNPAKKm8BxFxZBD87WKWNbA4J+ByoLjjA53faHpgAQS+GukAl9geIgKw3OUGLnclNhtWzCi0vDcpYZGn8Wsgo+vNDxEqeG1McqDgd9GKFDbqUAafrUCtX9RII92gRK7BtGGW4Now65Bt3PdHebNoq0v9NyU07w9pVV9y3koUicXui81Nl+FI//XnD8oL8dULW+g/FaKNIUKbxMZt57SA3UvOOojiPbtRE9n4by/HE9uSfhjFk4W4cJGN0LlqEPlYDtjMoJCmiVrEu4PsXjlnNzwhAMhxn2OVqpe0Vi1TI0Vdetgf3g/nryVCRknAy+EFCGE1CWEYqX1f5ykR8kSaLTq5Ha6GBtJQWghdWthTkFFkCHFyyBFyCB19taJIuHLgSepWfEoQvGoW/Fy0DqaETRe8ChC8KhD8PROwFN9Hgozr5+JgYDpjxXM/ysZ8QoiEOJH3eKXE3GegZEQvARShARSR7v9oKI4UuUOseSrXSJisX018oBouam75855eA9sJAHfc1NE000dXbexIuyv91FipAHRg1N3E57ToGvBqkhDim/EfUQj7jfsNNyCLMjiuchyilKo2fUBv3WfKN3a+CjHuDfHPAcTG6UPDBuISsX3HItCo48ej/nvHEDJgscwZmvnwkNw4Tm5GI4XyzedQBHTSIeHp4Mi6KCYVmGcrMTeWCKX9lbk1Il8Os4bhMpAw9IJBjfixMR3nJjkuK1zjjgd8d2nI9MwR24JNfTxZyQ+onr0A0x/ND1wvQucrXxykXBlrNpLj7ZGqRxjaZSgTv5R3SmVDs46Jep3gRx7p+S33AW837IX8KPxpD8Z2E7pfESV4juqlFGUZAWp5WlDlCS+uyQZjd8gluVZwxcjPqIY8R3FSIk7P56skxuWPJHBjsltxZOHKEh8d0EyGmgWqg7Chj6+GAkQzXjgaMaX/R+230ERyhY4lO1v9sQU0JvPO1myF+OvnwgpC9xSBnDezBGGAV7BAkTzHTia70m4tB88/D8iYv8MAvthhyEiGU3nZPktJLNwPp4OjcQH7pOPcozl5GOiXwCpOvco7W3nHvWz1xP2HJ5B/ZpHSlb6l3z9W9fZ3fLlEtoNvewVis/f0EY3hIkxfBP43TDwjTZgYrrvQRDT/WY3bBr9QARqjOC3uiHs+KasIN8gy7f+AT1/y+YetqMoSUnMN0BD4+slqKfMV0Z+ocQhe5HjUShYNfk7HZytudQD4PuNEKq80AHeXx/q/QdQSwMEFAAAAAgAWqqJXKW1alMvBQAASRUAABgAAAB4bC93b3Jrc2hlZXRzL3NoZWV0NS54bWydmGFv4jgQhv/KiJVOW+mOkBAo7VIkSssuUreLSm9P99FNphA1iTnbgUXqj79xkgLb2HXVlboQx+/M+JkhsWe45eJJrhAV/MrSXF60Vkqtzz1PRivMmGzzNeZ055GLjCm6FEtPrgWyuBRlqRd0On0vY0neGg3LsbkYDXmh0iTHuQBZZBkTu0tM+fai5bdeBu6S5UrpAW80XLMlLlD9vZ4LuvL2VuIkw1wmPAeBjxetsX8+9ftaUM74meBWHn0HueLbryKJb8gzLaTTAr24B86f9O1ZrIdoPqYYKW2U0ccGJ5im2jZF9l/tprWPQguPv7/4m5Y4aHkPTOKEp/8ksVpdtAYtiPGRFam649tvWC+xp+1FPJXl/7Ct5voUX1RIxbNaTBFkSV59sl81miNBMLAIgloQvBJ0bYJuLei+9mALKawF4SuBb/PQqwW9966hXwvK9HoVrJL0FVNsNBR8C6KcrYkerOwZU2IjPaPMI12TPRpOcl2FCyXodkIW1ej2x/31Aq6u78ezG/jj0yDwgy8wjiJe5OqvG9xgCpdU3U8x3+ZARQ/XLFrBLVc49BRFpq14Ef1RRPuwgjqs0B5WUIbV7VrCKr1oaxfAc6TKLAMCPQ0S+gnENAY5RdGG+xXCbHq3gAlTuORiB/dsCRn5JYKKzOAvKux0B4omKraUZKD8vpjOvdkCSqoSPmN72YbJ+HnC5OpPmC2ex1ffZ7fPC5YykaA8ab+x4NCdh7DKw8CWB1oLfPrdRSm8dAgbSzfYmDhs1PmGW5YheHCFMhLJWj8TDMauamNnFmNzkVCZ/ItMwDjTZg02rt8Z0IRToj/zMhSWnhgsTR2WJjyjZ6Z6I3e9fYp6lSlbTZ6asuPQ1PVkyolLSTJdqZcsfzJloZaHpVy/azYjP+zQv6G3OSbtcON3Or4Jq1XW4Nff8+t/gJ9D8wY/l7Lm943lsYlf38DPgM/hhSSBCZ9V1sB3usd3+rargQmfQ0P47jDCZMMeUpQmig4D94LRL/DIxv4dccMjlprAnjbBnvWaYB2OfV8rmmCtsgbYwR7s4ANgHRo3WIeBH/QGEvC2jatBE2VgQOlwRSiNP3GrrIHybI/yzOGqa2LpEE1unudsZwXpUC+K9TpNULyjMs+aOHsGnA6HgaUyrbIGTr9z2J11PgLUpXIQdcnp7SsKjGFcxImCKaIJ5ouR3x6ggyZNl7MgMOO065o8j3a7voNnz8jToaLN4N31T/rFbzAvTDQmLgu1dF+jE54roc9b+RIWKDZJZH4CvNg9phwODO8pVwChpWrtuibm4IA5+BBmh+odmB0WXmOeCx4XkQLaxFv4BoYqDkx8HZ5DWxlbdU2+3QPfroNv38jXoWqcaYyIHUZetIfDYkwHViPbbpPtwPC8dXns20rXqmuiDQ9oww+hdajeh9ZhZMGjhKUwy2UhWB7Ryefrj8Xs5B2kQ9NmNmiSdgTQt+wU7Lom6X51FO7232hJ1LvjniUMWm/vrPuFdkfrlBEGybJ1irodIGGbqBXseCF0t6ogWuvyuLnTx03dD4AYFUvSNsGKgUnIWL6rlHSRI8YYVy2D6sANEU+LLIdEls2N0rDARxSo+fM83e3p65aB3EmFGRSS6l8Z+w6K6ybFk/7UE4ReO8iqwWbsIHhHXZ0MxbLsv0koz7+6I3U0Wnf9gvNp2dl6Pe73X9qBjTt0o+wjHRxUTcbvTCyTXEKKj+Ss0z6llIgqXdWF4uuyy/TAFaWyajghHQmEnkD3HzlhrC+0g333dPQ/UEsDBBQAAAAIAFqqiVy4Q2dkOwQAAOkhAAANAAAAeGwvc3R5bGVzLnhtbN1abW/qNhT+K1H6ZZO2JRBIyS4gtWmRJt1NV7r9sK+GOGDJiTNjOri/fnYckgA+vJSkoIEq2+fkPOfVLzgdLsWG4u8LjIW1Tmi6HNkLIbLfHWc5W+AELX9jGU4lJ2Y8QUIO+dxZZhyjaKmEEup0Xdd3EkRSezxMV8kkEUtrxlapGNmdkmTp5o9IEv2ebWm4kEV4ZD/88vDgfvkpb37+8qvtjIdOATQexiyt4fm2pkhYlGDrHdGRHSJKppwosRglhG40uasIM0YZt4T0BCtrJGX5Q7M7eqScLHASkjKeK9ca9vU8cYKo4k8LhEoBn09HtuuGbvDkve5o8c8BJBBg76nffxwcmv1hCyf5ZwfQvQrQfek8e/0mAfPP5S5fEsPrLQzDdpPStMvBOXin8nBd2Axeeg0DnuXlBaX8sajt1Ubj06EOmDdqlSSUlqtkYGvCeJghITBPJ3KQy+TEA5ZV9N82mVwl5xxtOt2+fbbAklESKZXz0BxOpyZ6JahMePAaNgxaLdvNWvrcuKUS9HXSeEx7k/7ksWnQ/uvLiwuC5o2s2ynjEeZl5Xr2ljQeUhwLKc7JfKFawTI1T5gQLJGdiKA5S1Fe1luJbSsftfJjzcgWC3ksKeX2qcckI7aaUnwoW9FL6aIj3ZlhSr+r5/6Od85A67h2/nHV6SctuzIQRVfD6IHCr6Np7Bqs1/sQrpWRdyaeV9KlNB//s2ICf+M4Jut8vI5LAyD0ToXe3UNHWUY3T5TM0wRr589WOB6irZy1YJz8kNrUejeTBMxt6x1zQWZ1yr8cZW94LYp101nHsM3dymbv02w+ZZQHB7KBNPUq9F7z6P1WS8xvFf2xQu83jz5oNatHItNQIV8yrY5U8O2mVfBZpem3sLa6zcMXP7jbU3Be7G9Qnp072apO2enDC9LtplGne5PgXZRfD97j7sTEI7tBQxaSNCrET4bryLmwYWO616zSd7F1PLay+vY+dabnP55OlwV0lrvAgg9sCZ17TPQVLu8muhbTQfteX57oHa+7TSd6H/3+En2Fy+CMHrTv9XmJvsl5wrgtOsW1Re1uZOdmpKRa6lZ0ZP+l3gvRSqc1XREqSFqMFiSS+0uRlOqCRMILNKV4F18+H+EYrah4K5kju+r/iSOySoLyqW8qDsVTVf+rirh+j5PfzEpdapNb4ygshnw+Dc13tvuc6sr6kAPJaJ6Zo3iQHsgCSEZLQXr+T/4MQH80D7JtYOQMQJkBKKOlTJww/0J6zDKB/Jg9DQLP830oovpFxYEFIRQ331d/ZjTINiUB6VGaLos1nG24Qo7XAZTTYxUCeQpXIuQpHGvFMcdNSQSBOduQHiUBZQGqHaXfrEfVlFnG81RWIdugGQxzggDiqFo016jvA9Hx1decH2iWeF4QmDmKZ7bA8yCOmo0wB7JA2QBxPP0GdW8/crb7lFP9c8f4P1BLAwQUAAAACABaqolcl4q7HMAAAAATAgAACwAAAF9yZWxzLy5yZWxznZK5bsMwDEB/xdCeMAfQIYgzZfEWBPkBVqIP2BIFikWdv6/apXGQCxl5PTwS3B5pQO04pLaLqRj9EFJpWtW4AUi2JY9pzpFCrtQsHjWH0kBE22NDsFosPkAuGWa3vWQWp3OkV4hc152lPdsvT0FvgK86THFCaUhLMw7wzdJ/MvfzDDVF5UojlVsaeNPl/nbgSdGhIlgWmkXJ06IdpX8dx/aQ0+mvYyK0elvo+XFoVAqO3GMljHFitP41gskP7H4AUEsDBBQAAAAIAFqqiVy+HRqRcAEAAEwEAAAPAAAAeGwvd29ya2Jvb2sueG1stZPdaoNAEIVfRfYBqrFJoCEG2iZphZCEKrktq45xyP7I7pq0efquilQoSG+8mp0zy+GbYWZ5k+qSSHlxvjgTOiCFMeXCdXVaAKf6QZYgbCWXilNjU3V2damAZroAMJy5vufNXU5RkNWy8zoqt59IA6lBKaxYCyeEm/6t16lzRY0JMjTfAWneDIjDUSDHO2QB8YijC3l7lwrvUhjKolRJxgIyaQsnUAbTP3JUQ8Y00Y1iaPJBLUhA5p41zFFp0/xo/KllvIL93GaVkVtkBtSaGnhTsipRnGsb24Xba6OZQxfbIS7Uf8Yo8xxTWMu04iBMO0cFrAYUusBSE0dQDgEJ99tD3Y71D7O2NWOZeoNSC7QFFWYN3Xgk8UuPwx/g8MfliLbHHsjjAMjjuCBh1OOYDnBMx+XYH+JN9LnexM/hrkc0GyCaNYvcbW8GOQrI9tZNW91eUnpUTh2alfOns8mTvZiKsVerHcRO0qw7hu6QVz9QSwMEFAAAAAgAWqqJXIU5SJ3HAAAAPAQAABoAAAB4bC9fcmVscy93b3JrYm9vay54bWwucmVsc8WUTQ6CMBBGr0J6AEYBMTHAyg1b4wWaOlDCT5vOGPH2oiygiQs3hlXzTdP3vc00u2AnuTED6cZSMPbdQLnQzPYEQEpjLyk0FofppjKulzxFV4OVqpU1QrTbpeDWDFFka2ZwfVr8hWiqqlF4Nure48BfwPAwriWNyCK4Slcj5wLGbhkTfI59OJFFUN5y4crbXsDWQpEnFG0vFHtC8fZCiSeUbC908IQOfxQifnZIi82cvfr0j/U8vcWl/RPnob9Gx7cDeJ9F8QJQSwMEFAAAAAgAWqqJXFDd/8srAQAA7wUAABMAAABbQ29udGVudF9UeXBlc10ueG1szZRNT8MwDIb/StXr1GaMjwNadwGusAN/ILTuGjVfir3R/XvcdpsEGhVTJ9FLosT2+7yxpSzf9x4waoy2mMUVkX8UAvMKjMTUebAcKV0wkvgYNsLLvJYbEIv5/EHkzhJYSqjViFfLZyjlVlP00vA1KmezOIDGOHrqE1tWFkvvtcolcVzsbPGDkhwIKVd2OVgpjzNOiMVZQhv5HXCoe9tBCKqAaC0DvUrDWaLRAmmvAdNhiTMeXVmqHAqXbw2XpOgDyAIrADI67UVnw2TiDkO/3ozmdzJDQM5cB+eRJxbgctxxJG114lkIAqnhJ56ILD36fdBOu4Dij2xu76cLdTcPFN02vsffZ3zSv9DHYiI+bifi424iPu7/0ceHc/W1v6B2T41U9sgX3T+/+gJQSwECFAMUAAAACABaqolcRsdNSJUAAADNAAAAEAAAAAAAAAAAAAAAgAEAAAAAZG9jUHJvcHMvYXBwLnhtbFBLAQIUAxQAAAAIAFqqiVx9FnpJ7wAAACsCAAARAAAAAAAAAAAAAACAAcMAAABkb2NQcm9wcy9jb3JlLnhtbFBLAQIUAxQAAAAIAFqqiVyZXJwjEAYAAJwnAAATAAAAAAAAAAAAAACAAeEBAAB4bC90aGVtZS90aGVtZTEueG1sUEsBAhQDFAAAAAgAWqqJXDMltu9wBQAAXg8AABgAAAAAAAAAAAAAAICBIggAAHhsL3dvcmtzaGVldHMvc2hlZXQxLnhtbFBLAQIUAxQAAAAIAFqqiVyNkHbWZwQAABoTAAAYAAAAAAAAAAAAAACAgcgNAAB4bC93b3Jrc2hlZXRzL3NoZWV0Mi54bWxQSwECFAMUAAAACABaqolcvFkO+CIIAACTKwAAGAAAAAAAAAAAAAAAgIFlEgAAeGwvd29ya3NoZWV0cy9zaGVldDMueG1sUEsBAhQDFAAAAAgAWqqJXGkiK7pBBwAASiQAABgAAAAAAAAAAAAAAICBvRoAAHhsL3dvcmtzaGVldHMvc2hlZXQ0LnhtbFBLAQIUAxQAAAAIAFqqiVyltWpTLwUAAEkVAAAYAAAAAAAAAAAAAACAgTQiAAB4bC93b3Jrc2hlZXRzL3NoZWV0NS54bWxQSwECFAMUAAAACABaqolcuENnZDsEAADpIQAADQAAAAAAAAAAAAAAgAGZJwAAeGwvc3R5bGVzLnhtbFBLAQIUAxQAAAAIAFqqiVyXirscwAAAABMCAAALAAAAAAAAAAAAAACAAf8rAABfcmVscy8ucmVsc1BLAQIUAxQAAAAIAFqqiVy+HRqRcAEAAEwEAAAPAAAAAAAAAAAAAACAAegsAAB4bC93b3JrYm9vay54bWxQSwECFAMUAAAACABaqolchTlInccAAAA8BAAAGgAAAAAAAAAAAAAAgAGFLgAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHNQSwECFAMUAAAACABaqolcUN3/yysBAADvBQAAEwAAAAAAAAAAAAAAgAGELwAAW0NvbnRlbnRfVHlwZXNdLnhtbFBLBQYAAAAADQANAFYDAADgMAAAAAA=';
+var PY_TEMPLATE_NAME='IFRS_PY_Template.xlsx';
+
+function downloadPYTemplate(){
+  try{
+    var bin=atob(PY_TEMPLATE_B64);
+    var buf=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+    var blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=PY_TEMPLATE_NAME;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }catch(e){alert('Download failed: '+e.message);}
+}
 
 // Rules saved by normalised account name, survive refresh/reopen
 // Priority: MANUAL > PY-LEARNED > STORED(Supabase) > AUTO
@@ -615,14 +636,31 @@ function loadFilePY(f){
   r.onload=function(e){
     try{
       var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-      var tb=parseTB(wb);
-      APP.tbPrior=tb;
-      APP.mappingsPrior=smartMap(tb.accounts);
-      APP.pyPeriod=tb.period;
-      buildLearnedMappings();
-      sbox('psPY','ok','✓ '+tb.accounts.length+' PY accounts — '+Object.keys(APP.learnedMappings).length+' treatments learned');
-      if(APP.tb) renderMappingPanel();          // refresh CY review with PY column
-    }catch(err){sbox('psPY','er','✗ '+err.message);}
+
+      if(isIFRSTemplate(wb)){
+        // ── Standardised template path ──────────────────────────────────
+        var tpl=parseTemplate(wb);
+        APP.tbPrior={accounts:tpl.accounts,companyName:tpl.companyName,period:tpl.period,currency:tpl.currency};
+        APP.mappingsPrior=smartMap(tpl.accounts);
+        APP.pyPeriod=tpl.period;
+        APP.stmtsPrior=buildPyStmtsFromTemplate(tpl); // exact figures from SFP/IS sheets
+        buildLearnedMappings();
+        var learned=Object.keys(APP.learnedMappings).length;
+        var sfpTags=Object.keys(tpl.sfpMap).length,isTags=Object.keys(tpl.isMap).length;
+        var ndEntries=Object.values(tpl.notesDetail).reduce(function(s,v){return s+v.length;},0);
+        sbox('psPY','ok','✓ Template detected — '+sfpTags+' SFP + '+isTags+' IS line items loaded | '+ndEntries+' note detail rows | '+learned+' categorisations learned from TB');
+      } else {
+        // ── Generic / messy file path (existing logic) ──────────────────
+        var tb=parseTB(wb);
+        APP.tbPrior=tb;
+        APP.mappingsPrior=smartMap(tb.accounts);
+        APP.pyPeriod=tb.period;
+        buildLearnedMappings();
+        sbox('psPY','ok','✓ '+tb.accounts.length+' PY accounts — '+Object.keys(APP.learnedMappings).length+' treatments learned');
+      }
+
+      if(APP.tb) renderMappingPanel();
+    }catch(err){sbox('psPY','er','✗ '+err.message);console.error(err);}
   };
   r.readAsArrayBuffer(f);
 }
@@ -631,8 +669,19 @@ function loadFilePY(f){
 function buildLearnedMappings(){
   APP.learnedMappings={};
   if(!APP.tbPrior||!APP.mappingsPrior.length)return;
+  // Build two lookup maps from prior year: by code AND by normalised name
+  var pyByCode={},pyByName={};
   APP.tbPrior.accounts.forEach(function(a,i){
-    var m=APP.mappingsPrior[i];if(m)APP.learnedMappings[a.code]=m;
+    var m=APP.mappingsPrior[i];if(!m)return;
+    if(a.code)pyByCode[String(a.code).trim()]=m;
+    var nk=normName(a.name);if(nk.length>=4)pyByName[nk]=m;
+  });
+  // Apply to current year: code match first, then name match as fallback
+  if(!APP.tb)return;
+  APP.tb.accounts.forEach(function(a){
+    var code=String(a.code||'').trim(),nk=normName(a.name);
+    var m=pyByCode[code]||(nk.length>=4?pyByName[nk]:null);
+    if(m)APP.learnedMappings[code]=m;
   });
 }
 
@@ -648,45 +697,390 @@ function effMap(code,idx){
   return{m:APP.mappings[idx]||{statement:'SFP',section:'CA',lineItem:'Other Current Assets',reason:'No code prefix matched → fallback: Other Current Assets'},src:'AUTO'};
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SMART TEMPLATE PARSER
+// Reads the standardised IFRS Prior Year Template (sheets: INFO, TB, SFP, IS, NOTES_DETAIL)
+// Returns { accounts, companyName, period, currency,     ← for TB learning
+//           sfpMap, isMap, notesDetail }                 ← for comparative figures
+// Falls back to generic parseTB if template not detected.
+// ═══════════════════════════════════════════════════════════════════════════
+function isIFRSTemplate(wb){
+  var names=wb.SheetNames.map(function(n){return n.toUpperCase();});
+  // Detect our template: must have SFP + IS, or INFO sheet with template signature
+  return (names.indexOf('SFP')>=0&&names.indexOf('IS')>=0)||names.indexOf('INFO')>=0;
+}
+
+function parseTemplate(wb){
+  var sheets=wb.SheetNames;
+  var get=function(name){
+    var idx=-1;
+    for(var i=0;i<sheets.length;i++){if(sheets[i].toUpperCase()===name.toUpperCase()){idx=i;break;}}
+    if(idx<0)return null;
+    return XLSX.utils.sheet_to_json(wb.Sheets[sheets[idx]],{header:1,defval:null,raw:true});
+  };
+
+  // ── Read INFO sheet ────────────────────────────────────────────────────
+  var co='',period='',currency='SAR';
+  var infoRows=get('INFO')||[];
+  for(var i=0;i<infoRows.length;i++){
+    var row=infoRows[i]||[];
+    var label=String(row[0]||'').toLowerCase();
+    var val=String(row[2]||row[3]||'').trim();
+    if(!val)val=String(row[1]||'').trim();
+    if(/company/i.test(label)&&val&&val.length>2)co=val;
+    if(/period/i.test(label)&&val&&val.length>3)period=val;
+    if(/currency/i.test(label)&&val&&val.length>=3)currency=val.substring(0,3).toUpperCase();
+  }
+
+  // ── Read TB sheet (for account categorisation learning) ───────────────
+  var accounts=[],tbRows=get('TB')||[];
+  var tbHdr=-1;
+  for(var i=0;i<Math.min(tbRows.length,8);i++){
+    var r=(tbRows[i]||[]).map(function(c){return String(c||'').toLowerCase().trim();});
+    if(r.some(function(c){return c==='account code'||c==='code'||c==='account no';})||
+       r.some(function(c){return c==='name'||c==='account name';})){tbHdr=i;break;}
+  }
+  if(tbHdr>=0){
+    var hr=tbRows[tbHdr]||[];
+    var codeC2=0,nameC2=1,typeC2=-1,drC=-1,crC=-1;
+    hr.forEach(function(c,i){
+      var s=String(c||'').toLowerCase().trim();
+      if(s==='account code'||s==='code'||s==='account no'||s==='account no.')codeC2=i;
+      if(s==='name'||s==='account name'||s==='account description')nameC2=i;
+      if(s==='type')typeC2=i;
+      if(s==='debit'||s==='debit amount'||s==='dr')drC=i;
+      if(s==='credit'||s==='credit amount'||s==='cr')crC=i;
+    });
+    for(var i=tbHdr+1;i<tbRows.length;i++){
+      var row=tbRows[i];if(!row)continue;
+      var cs=String(row[codeC2]||'').trim().replace(/\.0$/,'');
+      var nm=String(row[nameC2]||'').trim();
+      if(!nm||nm.length<2)continue;
+      if(/^↑|^replace|^delete|^sample/i.test(nm))continue; // skip instruction rows
+      var tp=typeC2>=0?String(row[typeC2]||'').trim():'';
+      var ed=toN(row[drC>=0?drC:3]),ec=toN(row[crC>=0?crC:4]);
+      // Use type for sign if both columns are present but one is zero
+      if(!cs)cs='TB_'+i;
+      if(ed===0&&ec===0)continue;
+      accounts.push({code:cs,name:nm,endDebit:ed,endCredit:ec,net:ed-ec,type:tp});
+    }
+  }
+
+  // ── Read SFP sheet ────────────────────────────────────────────────────
+  // Tag → amount map.  Tag format: "NCA|PPE", "CA|Cash", "E|ShareCap", etc.
+  var sfpMap={};
+  var sfpRows=get('SFP')||[];
+  sfpRows.forEach(function(row){
+    if(!row)return;
+    var tag=String(row[2]||'').trim();   // column C = IFRS Category Tag
+    var amt=toN(row[3]);                  // column D = amount
+    if(tag&&tag.indexOf('|')>=0&&amt!==0)sfpMap[tag]=amt;
+  });
+
+  // ── Read IS sheet ─────────────────────────────────────────────────────
+  var isMap={};
+  var isRows=get('IS')||[];
+  isRows.forEach(function(row){
+    if(!row)return;
+    var tag=String(row[2]||'').trim();
+    var amt=toN(row[3]);
+    if(tag&&tag.indexOf('IS|')===0&&amt!==0)isMap[tag]=amt;
+  });
+
+  // ── Read NOTES_DETAIL sheet ───────────────────────────────────────────
+  var notesDetail={}; // tag → [{name, amount, code}]
+  var ndRows=get('NOTES_DETAIL')||[];
+  var ndHdr=-1;
+  for(var i=0;i<Math.min(ndRows.length,8);i++){
+    var r=(ndRows[i]||[]).map(function(c){return String(c||'').toLowerCase().trim();});
+    if(r.some(function(c){return c==='ifrs category tag'||c==='category tag';})){ndHdr=i;break;}
+  }
+  for(var i=(ndHdr>=0?ndHdr+1:4);i<ndRows.length;i++){
+    var row=ndRows[i];if(!row)continue;
+    var tag=String(row[1]||'').trim();
+    var nm=String(row[2]||'').trim();
+    var amt=toN(row[3]);
+    var code=String(row[4]||'').trim();
+    if(!tag||!nm||nm.length<2)continue;
+    if(/^↑|^replace|^each row/i.test(nm))continue;
+    if(!notesDetail[tag])notesDetail[tag]=[];
+    notesDetail[tag].push({name:nm,amount:amt,code:code});
+  }
+
+  // ── Infer meta from TB if INFO not filled ─────────────────────────────
+  if(!co&&accounts.length){
+    // Check if company name is in any early TB rows above header
+    for(var i=0;i<Math.min(tbHdr,4);i++){
+      var row=tbRows[i]||[];
+      for(var j=0;j<row.length;j++){
+        var s=String(row[j]||'').trim();
+        if(s.length>5&&!/trial|balance|tb|period|code|date/i.test(s)&&!/^\d/.test(s)){co=s;break;}
+      }
+      if(co)break;
+    }
+  }
+  if(!co)co='Company';
+  if(!period)period='Prior Year';
+
+  return{accounts:accounts,companyName:co,period:period,currency:currency,
+         sfpMap:sfpMap,isMap:isMap,notesDetail:notesDetail,isTemplate:true};
+}
+
+// ── Build synthetic pySfp / pyIs from template maps ───────────────────────
+// These are used by rSFP, rPL, rEQ, rNotes for comparative columns.
+// We create fake "account" objects per line item so existing render code works.
+function buildPyStmtsFromTemplate(tplData){
+  var sfpMap=tplData.sfpMap,isMap=tplData.isMap,nd=tplData.notesDetail;
+
+  // Helper: get detail accounts for a tag, or fall back to single synthetic account
+  function detail(tag,lineItemName,negate){
+    var rows=nd[tag]||[];
+    if(rows.length){
+      return rows.map(function(r){
+        var net=negate?-Math.abs(r.amount):Math.abs(r.amount);
+        return{code:r.code||tag,name:r.name,endDebit:net>0?net:0,endCredit:net<0?-net:0,net:net};
+      });
+    }
+    var v=sfpMap[tag]||isMap[tag]||0;
+    if(!v)return[];
+    var net=negate?-Math.abs(v):Math.abs(v);
+    return[{code:tag,name:lineItemName,endDebit:net>0?net:0,endCredit:net<0?-net:0,net:net}];
+  }
+
+  var sfp={NCA:{},CA:{},E:{},NCL:{},CL:{}};
+  // NCA
+  sfp.NCA['Property, Plant and Equipment']=detail('NCA|PPE','Property, Plant and Equipment',false);
+  sfp.NCA['Capital Work in Progress']=detail('NCA|CWIP','Capital Work in Progress',false);
+  sfp.NCA['Intangible Assets']=detail('NCA|Intangibles','Intangible Assets',false);
+  sfp.NCA['Right-of-Use Assets']=detail('NCA|ROU','Right-of-Use Assets',false);
+  sfp.NCA['Long-term Investments']=detail('NCA|LTI','Long-term Investments',false);
+  sfp.NCA['Deferred Tax Asset']=detail('NCA|DTA','Deferred Tax Asset',false);
+  sfp.NCA['Other Non-Current Assets']=detail('NCA|Other','Other Non-Current Assets',false);
+  // CA
+  sfp.CA['Cash and Cash Equivalents']=detail('CA|Cash','Cash and Cash Equivalents',false);
+  sfp.CA['Trade and Other Receivables']=detail('CA|Receivables','Trade and Other Receivables',false);
+  sfp.CA['Inventories']=detail('CA|Inventories','Inventories',false);
+  sfp.CA['Prepayments and Deposits']=detail('CA|Prepayments','Prepayments and Deposits',false);
+  sfp.CA['VAT and Tax Receivables']=detail('CA|VATRecv','VAT and Tax Receivables',false);
+  sfp.CA['Other Current Assets']=detail('CA|OtherCA','Other Current Assets',false);
+  // Equity
+  sfp.E['Share Capital']=detail('E|ShareCap','Share Capital',true);
+  sfp.E['Retained Earnings']=detail('E|RetEarnings','Retained Earnings',true);
+  sfp.E['Other Reserves']=detail('E|Reserves','Other Reserves',true);
+  sfp.E['Partner / Shareholder Accounts']=detail('E|Partners','Partner / Shareholder Accounts',true);
+  // NCL
+  sfp.NCL['Long-term Borrowings']=detail('NCL|LTBorrow','Long-term Borrowings',true);
+  sfp.NCL['Lease Liabilities']=detail('NCL|Lease','Lease Liabilities',true);
+  sfp.NCL['Employee Benefit Provisions']=detail('NCL|EOSB','Employee Benefit Provisions',true);
+  sfp.NCL['Deferred Tax Liability']=detail('NCL|DTL','Deferred Tax Liability',true);
+  // CL
+  sfp.CL['Trade and Other Payables']=detail('CL|Payables','Trade and Other Payables',true);
+  sfp.CL['Accrued Liabilities']=detail('CL|Accrued','Accrued Liabilities',true);
+  sfp.CL['Short-term Borrowings']=detail('CL|STBorrow','Short-term Borrowings',true);
+  sfp.CL['VAT and Tax Payables']=detail('CL|VATPayable','VAT and Tax Payables',true);
+  sfp.CL['Deferred Revenue']=detail('CL|DeferredRev','Deferred Revenue',true);
+  sfp.CL['Other Current Liabilities']=detail('CL|OtherCL','Other Current Liabilities',true);
+
+  var is={REV:{},COS:{},DIST:{},ADMIN:{},OI:{},OE:{},FI:{},FC:{},TAX:{}};
+  is.REV['Revenue']=detail('IS|REV|Revenue','Revenue',true);
+  is.REV['Service Revenue']=detail('IS|REV|ServiceRev','Service Revenue',true);
+  is.REV['Product Sales Revenue']=detail('IS|REV|ProductSales','Product Sales Revenue',true);
+  is.REV['Other Revenue']=detail('IS|REV|OtherRev','Other Revenue',true);
+  is.COS['Labour Costs — Cost of Sales']=detail('IS|COS|Labour','Labour Costs — Cost of Sales',false);
+  is.COS['Material Costs']=detail('IS|COS|Materials','Material Costs',false);
+  is.COS['Sub-contractor Costs']=detail('IS|COS|Subcontract','Sub-contractor Costs',false);
+  is.COS['Depreciation — Cost of Sales']=detail('IS|COS|DepnCOS','Depreciation — Cost of Sales',false);
+  is.COS['Other Cost of Sales']=detail('IS|COS|OtherCOS','Other Cost of Sales',false);
+  is.ADMIN['Salaries and Employee Benefits']=detail('IS|ADMIN|Salaries','Salaries and Employee Benefits',false);
+  is.ADMIN['Social Insurance and GOSI']=detail('IS|ADMIN|GOSI','Social Insurance and GOSI',false);
+  is.ADMIN['Rent Expenses']=detail('IS|ADMIN|Rent','Rent Expenses',false);
+  is.ADMIN['Professional and Consultancy Fees']=detail('IS|ADMIN|Professional','Professional and Consultancy Fees',false);
+  is.ADMIN['Utilities and Technology']=detail('IS|ADMIN|Utilities','Utilities and Technology',false);
+  is.ADMIN['Depreciation — Admin']=detail('IS|ADMIN|DepnAdmin','Depreciation — Admin',false);
+  is.ADMIN['General and Administrative Expenses']=detail('IS|ADMIN|General','General and Administrative Expenses',false);
+  is.DIST['Distribution and Selling Expenses']=detail('IS|DIST|DistSelling','Distribution and Selling Expenses',false);
+  is.OI['Other Income']=detail('IS|OI|OtherIncome','Other Income',true);
+  is.OE['Other Expenses']=detail('IS|OE|OtherExpenses','Other Expenses',false);
+  is.FI['Finance Income']=detail('IS|FI|FinIncome','Finance Income',true);
+  is.FC['Bank Charges and Fees']=detail('IS|FC|FinCosts','Finance Costs',false);
+  is.TAX['Zakat / Income Tax']=detail('IS|TAX|Tax','Zakat / Income Tax',false);
+
+  return{sfp:sfp,is:is};
+}
+
 // ═══════════════════════════════════════════════
 // PARSER (universal — handles all TB formats)
 // ═══════════════════════════════════════════════
 function parseTB(wb){
+  // ── STEP 1: Find the best sheet ─────────────────────────────────────────
+  // Priority: exact "TB YYYY" > "trial balance" > avoid formatted fin-statement sheets
   var sn=wb.SheetNames[0];
-  for(var i=0;i<wb.SheetNames.length;i++){if(/trial|balance/i.test(wb.SheetNames[i])&&!/filter/i.test(wb.SheetNames[i])){sn=wb.SheetNames[i];break;}}
+  var tbYearSheets=[],tbOther=[];
+  for(var i=0;i<wb.SheetNames.length;i++){
+    var n=wb.SheetNames[i],nm=n.trim().match(/^TB\s*(\d{4})$/i);
+    if(nm){tbYearSheets.push({yr:parseInt(nm[1]),name:n});}
+    else if(/trial/i.test(n)&&!/filter/i.test(n)){tbOther.push(n);}
+    else if(/balance/i.test(n)&&!/balance sheet|fin.*pos/i.test(n)&&!/filter/i.test(n)){tbOther.push(n);}
+  }
+  // Most-recent TB YYYY wins; fallback to other trial/balance sheets
+  if(tbYearSheets.length){tbYearSheets.sort(function(a,b){return b.yr-a.yr;});sn=tbYearSheets[0].name;}
+  else if(tbOther.length){sn=tbOther[0];}
+
   var ws=wb.Sheets[sn];
   var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:false});
-  var hdr=2;
-  for(var i=0;i<Math.min(rows.length,15);i++){
-    var r=(rows[i]||[]).map(function(c){return String(c||'').toLowerCase();});
-    if(r.some(function(c){return c.trim()==='debit'||c.includes('debit')})&&r.some(function(c){return c.trim()==='credit'||c.includes('credit')})){hdr=i;break;}
+
+  // ── STEP 2: Detect column layout ─────────────────────────────────────────
+  var hdr=-1,codeC=-1,nameC=-1,typeC=-1,dcs=[],ccs=[],balC=-1;
+  for(var i=0;i<Math.min(rows.length,20);i++){
+    var r=(rows[i]||[]).map(function(c){return String(c||'').toLowerCase().trim();});
+    var hasDebit=r.some(function(c){return c==='debit'||c==='dr'||c.includes('ending debit')||c==='amount in pak rupees';});
+    var hasCredit=r.some(function(c){return c==='credit'||c==='cr'||c.includes('ending credit');});
+    var hasName=r.some(function(c){return c==='name'||c==='account name'||c==='description'||c==='account description';});
+    var hasType=r.some(function(c){return c==='type';});
+    if(hasName||(hasDebit&&hasCredit)){hdr=i;break;}
+    if(hasType&&hasName){hdr=i;break;}
   }
-  var hr=rows[hdr]||[],dcs=[],ccs=[],codeC=0,nameC=1;
-  hr.forEach(function(c,i){var s=String(c||'').toLowerCase().trim();if(s==='debit'||s==='d'||s.includes('ending debit'))dcs.push(i);if(s==='credit'||s==='c'||s.includes('ending credit'))ccs.push(i);if(s==='code'||s==='account code')codeC=i;if(s==='account'||s==='account name'||s==='description')nameC=i;});
-  var edC=dcs.length?dcs[dcs.length-1]:6,ecC=ccs.length?ccs[ccs.length-1]:7;
-  var period='',currency='SAR';
-  for(var i=0;i<hdr;i++){
+  if(hdr<0)hdr=2;
+  var hr=rows[hdr]||[];
+  hr.forEach(function(c,i){
+    var s=String(c||'').toLowerCase().trim();
+    if(s==='code'||s==='account code'||s==='account no.'||s==='account no')codeC=i;
+    if(s==='account'||s==='name'||s==='account name'||s==='description'||s==='account description')nameC=i;
+    if(s==='type')typeC=i;
+    if(s==='debit'||s==='dr'||s.includes('ending debit'))dcs.push(i);
+    if(s==='credit'||s==='cr'||s.includes('ending credit'))ccs.push(i);
+    if(s==='balance'||s==='amount'||s==='net')balC=i;
+  });
+  // For TB sheets with "Amount in Pak Rupees" header spanning Dr/Cr sub-cols
+  // detect by finding numeric columns adjacent to Type column
+  if(typeC>=0&&dcs.length===0&&ccs.length===0){
+    // Scan data rows to find which columns have numbers
+    for(var i=hdr+1;i<Math.min(hdr+6,rows.length);i++){
+      var row=rows[i]||[];
+      for(var j=0;j<row.length;j++){
+        var v=toN(row[j]);
+        if(v!==0&&j>typeC){
+          if(dcs.indexOf(j)<0)dcs.push(j);
+          break;
+        }
+      }
+    }
+    // Look for a second numeric column after the first
+    if(dcs.length){
+      for(var i=hdr+1;i<Math.min(hdr+6,rows.length);i++){
+        var row=rows[i]||[];
+        var foundFirst=false;
+        for(var j=0;j<row.length;j++){
+          if(j===dcs[0]){foundFirst=true;continue;}
+          if(foundFirst&&toN(row[j])!==0){if(ccs.indexOf(j)<0)ccs.push(j);break;}
+        }
+        if(ccs.length)break;
+      }
+    }
+  }
+  // Scan for Dr/Cr header row that might be one row above or below hdr
+  if(dcs.length===0||ccs.length===0){
+    for(var i=Math.max(0,hdr-2);i<Math.min(rows.length,hdr+4);i++){
+      var r=(rows[i]||[]).map(function(c){return String(c||'').toLowerCase().trim();});
+      r.forEach(function(s,idx){
+        if((s==='dr'||s==='debit')&&dcs.indexOf(idx)<0)dcs.push(idx);
+        if((s==='cr'||s==='credit')&&ccs.indexOf(idx)<0)ccs.push(idx);
+      });
+    }
+  }
+  // If nameC still not found, search first 20 data rows for the column with most non-empty text
+  if(nameC<0){
+    var colScores={};
+    for(var i=hdr+1;i<Math.min(hdr+15,rows.length);i++){
+      var row=rows[i]||[];
+      for(var j=0;j<row.length;j++){
+        var v=String(row[j]||'').trim();
+        if(v.length>4&&isNaN(Number(v.replace(/,/g,'')))){colScores[j]=(colScores[j]||0)+1;}
+      }
+    }
+    var best=-1,bestScore=0;
+    Object.keys(colScores).forEach(function(k){if(colScores[k]>bestScore){bestScore=colScores[k];best=parseInt(k);}});
+    if(best>=0)nameC=best;
+  }
+  if(nameC<0)nameC=1;
+  // If codeC not found, check column before nameC
+  if(codeC<0)codeC=Math.max(0,nameC-1);
+
+  var edC=dcs.length?dcs[dcs.length-1]:-1;
+  var ecC=ccs.length?ccs[ccs.length-1]:-1;
+  // If only one number column found, treat it as net balance (use Type for sign)
+  var singleBalMode=(edC<0&&ecC<0&&balC>=0)||(dcs.length===1&&ccs.length===0);
+  if(singleBalMode&&balC<0&&dcs.length)balC=dcs[0];
+
+  // ── STEP 3: Extract meta (period, currency, company) ─────────────────────
+  var period='',currency='PKR',co='';
+  for(var i=0;i<rows.length;i++){
     var row=rows[i]||[];
-    for(var j=0;j<row.length;j++){var s=String(row[j]||'').trim();if(!s)continue;if(/\bSAR\b/.test(s))currency='SAR';else if(/\bAED\b/.test(s))currency='AED';else if(/\bUSD\b/.test(s))currency='USD';else if(/\bEUR\b/.test(s))currency='EUR';else if(/\bGBP\b/.test(s))currency='GBP';else if(/\bPKR\b/.test(s))currency='PKR';if(!period&&(/from.*to/i.test(s)||/\d{4}-\d{2}-\d{2}/.test(s)))period=s;}
-    var pc=String(row[4]||row[3]||'').trim();if(!period&&/^\d{4}$/.test(pc))period='Year ended 31 December '+pc;else if(!period&&pc.length>4&&pc.length<40&&/\d{4}/.test(pc))period=pc;
+    for(var j=0;j<row.length;j++){
+      var s=String(row[j]||'').trim();
+      if(!s)continue;
+      if(/\bSAR\b/.test(s))currency='SAR';
+      else if(/\bAED\b/.test(s))currency='AED';
+      else if(/\bUSD\b/.test(s))currency='USD';
+      else if(/\bEUR\b/.test(s))currency='EUR';
+      else if(/\bGBP\b/.test(s))currency='GBP';
+      else if(/\bPKR\b|rupees?/i.test(s))currency='PKR';
+      if(!period&&(/year ended/i.test(s)||/for the year/i.test(s)||/period:/i.test(s)))period=s.replace(/period:/i,'').trim();
+      if(!period&&/jan.*dec|\d{4}.*to.*\d{4}/i.test(s))period=s;
+      if(!co&&s.length>8&&s.length<80&&!/trial|balance|period|note|statement|year|rupees/i.test(s)&&!/^[\d\W]+$/.test(s)&&i<6)co=s;
+    }
+    if(co&&period&&currency)break;
   }
-  if(!period){var h4=String(hr[4]||hr[3]||'').trim();if(/^\d{4}$/.test(h4))period='Year ended 31 December '+h4;}
+  // Extract year from TB sheet name if period still not found
+  if(!period){var ym=sn.match(/(\d{4})/);if(ym)period='Year ended 31 December '+ym[1];}
   if(!period)period='Year ended 31 December 2025';
-  var co='';
-  if(wb.SheetNames.indexOf('Filters')>=0){var fw=wb.Sheets['Filters'];var fr=XLSX.utils.sheet_to_json(fw,{header:1,defval:null});for(var i=0;i<fr.length;i++){if(/company/i.test(String(fr[i][0]||''))&&fr[i][1]){co=String(fr[i][1]);break;}}}
-  if(!co){for(var i=0;i<Math.min(hdr,4);i++){var row=rows[i]||[];for(var j=0;j<row.length;j++){var s=String(row[j]||'').trim();if(s.length>5&&!/trial|balance|code|date|filter/i.test(s)&&!/^\d/.test(s)){co=s;break;}}if(co)break;}}
-  if(co){var mm=co.match(/Trial Balance\s*[-–]\s*(.+?)(?:\s*[-–]\s*(?:SAR|AED|USD|EUR|GBP))?$/i);if(mm)co=mm[1].trim();else co=co.replace(/Trial Balance.*/i,'').trim()||co;}
-  if(!co)co='Company';
-  var accounts=[],sections=[];
+  if(!co){var mm=sn.match(/^TB\s*(\d{4})/i);co=mm?'Company ('+mm[1]+')':'Company';}
+  // Clean up company name
+  if(co){co=co.replace(/Trial Balance.*/i,'').replace(/^(Audited TB|TB\s*)/i,'').trim()||co;}
+
+  // ── STEP 4: Parse account rows ────────────────────────────────────────────
+  var accounts=[],sections=[],usedCodes={};
   for(var i=hdr+1;i<rows.length;i++){
     var row=rows[i];if(!row)continue;
     var rawCode=row[codeC],name=String(row[nameC]||'').trim();
-    if(!name||/^total$/i.test(name)||/^grand total/i.test(name))continue;
+    if(!name||/^total$/i.test(name)||/^grand total/i.test(name)||/^-+$/.test(name))continue;
+    if(name.length<2)continue;
     var cs=String(rawCode||'').trim().replace(/\.0$/,'');
-    var isLeaf=cs!==''&&cs!=='nan'&&!isNaN(parseFloat(cs));
-    var ed=toN(row[edC]),ec=toN(row[ecC]),net=ed-ec;
-    if(isLeaf){if(ed===0&&ec===0)continue;accounts.push({code:cs,name:name,endDebit:ed,endCredit:ec,net:net});}
-    else if(name&&/^\d/.test(name))sections.push(name);
+    // Skip rows where "name" is actually a formula or label like "(Rupees)"
+    if(/^=|^\(rupees|^-{3,}|^period/i.test(name))continue;
+    var isLeaf=cs!==''&&cs!=='nan'&&cs!=='null'&&(
+      !isNaN(parseFloat(cs.replace(/[^0-9.]/g,'')))   // numeric code
+      ||/^[A-Z]\d/i.test(cs)                           // alpha-numeric like A1
+    );
+    var ed=0,ec=0,net=0;
+    if(singleBalMode){
+      var bal=toN(row[balC]);
+      // Use Type column if available: Liability/Equity/Revenue → credit (negative net)
+      var typ=String(row[typeC]||'').toLowerCase().trim();
+      if(/liability|equity|revenue|income/i.test(typ)){ec=Math.abs(bal);net=-Math.abs(bal);}
+      else{ed=Math.abs(bal);net=Math.abs(bal);}
+    } else if(edC>=0&&ecC>=0){
+      ed=toN(row[edC]);ec=toN(row[ecC]);net=ed-ec;
+    } else if(edC>=0){
+      // Only Dr column found — use Type for sign
+      var v=toN(row[edC]);
+      var typ=String(row[typeC]||'').toLowerCase().trim();
+      if(/liability|equity|revenue|income/i.test(typ)){ec=Math.abs(v);net=-Math.abs(v);}
+      else{ed=Math.abs(v);net=Math.abs(v);}
+    }
+    // Also include accounts with no code if they have a non-zero balance and a proper name
+    if(!isLeaf&&name&&name.length>2&&(ed!==0||ec!==0)){
+      isLeaf=true;
+      cs='NC_'+i; // generated code for codeless accounts
+    }
+    var acctType=typeC>=0?String(row[typeC]||'').trim():'';
+    if(isLeaf){
+      if(ed===0&&ec===0&&net===0)continue;
+      if(usedCodes[cs]){cs=cs+'_'+i;}
+      usedCodes[cs]=true;
+      accounts.push({code:cs,name:name,endDebit:ed,endCredit:ec,net:net,type:acctType});
+    } else if(name&&/^\d/.test(name)){sections.push(name);}
   }
   return{accounts:accounts,sections:sections,companyName:co,period:period,currency:currency};
 }
@@ -698,7 +1092,9 @@ function toN(v){if(v===null||v===undefined||v==='')return 0;return parseFloat(St
 function smartMap(accounts){
   return accounts.map(function(a){
     var m=mapOne(a);
-    m.reason=getAutoReason(a,m);
+    // Append type-column note to reason if available
+    if(a.type){m.reason=(m.reason||'')+(m.reason?'\n':'')+'📋 TB Type column: "'+a.type+'" → used as primary classification guide';}
+    else{m.reason=getAutoReason(a,m);}
     return m;
   });
 }
@@ -810,6 +1206,71 @@ function getAutoReason(a,m){
 function mapOne(a){
   var code=String(a.code||''),name=(a.name||'').toLowerCase().trim(),net=a.net;
   var d1=code[0]||'',d2=code.substring(0,2),d3=code.substring(0,3),d4=code.substring(0,4);
+  var tbType=(a.type||'').toLowerCase().trim(); // "Type" column from TB sheet (Asset/Liability/Equity/Revenue/Expense)
+
+  // ── TYPE-COLUMN OVERRIDE (highest priority when TB has explicit Type column) ─
+  // This prevents mis-routing when chart of accounts uses non-standard numbering
+  // (e.g. AHPL uses 4xxx for Expenses, not Revenue).
+  if(tbType){
+    if(/^revenue$|^income$/i.test(tbType)){
+      // Use name to pick the right revenue sub-line, but force IS/REV statement+section
+      if(/rental.*income|income.*rent/i.test(name))return IS('REV','Revenue');
+      if(/service.*income|service.*revenue/i.test(name))return IS('REV','Service Revenue');
+      if(/product.*sale|sale.*product/i.test(name))return IS('REV','Product Sales Revenue');
+      if(/commission/i.test(name))return IS('REV','Commission Income');
+      if(/management.*fee/i.test(name))return IS('REV','Management Fee Income');
+      if(/other.*income|miscellaneous.*income/i.test(name))return IS('OI','Other Income');
+      return IS('REV','Revenue');
+    }
+    if(/^expense$/i.test(tbType)){
+      // Use name to route to right expense sub-line
+      if(/salary|salaries|wage|payroll/i.test(name))return IS('ADMIN','Salaries and Employee Benefits');
+      if(/gosi|social insur/i.test(name))return IS('ADMIN','Social Insurance and GOSI');
+      if(/audit|legal|professional|consultanc/i.test(name))return IS('ADMIN','Professional and Consultancy Fees');
+      if(/rent.*expense|office.*rent/i.test(name))return IS('ADMIN','Rent Expenses');
+      if(/util|technolog|internet|phone/i.test(name))return IS('ADMIN','Utilities and Technology');
+      if(/bank.*charg|bank.*fee/i.test(name))return IS('FC','Bank Charges and Fees');
+      if(/depreciation|amortis/i.test(name))return IS('ADMIN','Depreciation — Admin');
+      if(/travel|conveyance|transport/i.test(name))return IS('ADMIN','Travel and Accommodation');
+      if(/advertis|marketing/i.test(name))return IS('DIST','Marketing and Advertising');
+      if(/insurance/i.test(name))return IS('ADMIN','Insurance Expenses');
+      if(/interest.*expense|finance.*cost|murabaha/i.test(name))return IS('FC','Finance Costs');
+      if(/zakat|income.*tax|withholding.*tax/i.test(name))return IS('TAX','Zakat / Income Tax');
+      return IS('ADMIN','General and Administrative Expenses');
+    }
+    if(/^asset$/i.test(tbType)){
+      // Force SFP Asset, then use name/code to refine
+      if(/cash|bank|petty cash/i.test(name))return SFP('CA','Cash and Cash Equivalents');
+      if(/capital work|cwip|work in progress/i.test(name))return SFP('NCA','Capital Work in Progress');
+      if(/inventor|stock|raw material|finished goods/i.test(name))return SFP('CA','Inventories');
+      if(/receiv|debtor/i.test(name))return SFP('CA','Trade and Other Receivables');
+      if(/prepaid|advance.*to/i.test(name))return SFP('CA','Prepayments and Deposits');
+      if(/building|furniture|equipment|vehicle|machinery|property.*plant/i.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/accumulated dep|accum dep/i.test(name))return SFP('NCA','Property, Plant and Equipment');
+      if(/investment/i.test(name))return SFP('NCA','Long-term Investments');
+      if(/intangible|software(?!.*expense)|goodwill/i.test(name))return SFP('NCA','Intangible Assets');
+      return net>=0?SFP('CA','Other Current Assets'):SFP('NCA','Other Non-Current Assets');
+    }
+    if(/^liability$/i.test(tbType)){
+      if(/payable to|trade.*payable|account.*payable|supplier/i.test(name))return SFP('CL','Trade and Other Payables');
+      if(/accrued.*salary|accrued.*wage|accrued.*gosi/i.test(name))return SFP('CL','Accrued Liabilities');
+      if(/accrued|accrual/i.test(name))return SFP('CL','Accrued Liabilities');
+      if(/vat.*payable|output.*vat|tax.*payable|wht.*payable/i.test(name))return SFP('CL','VAT and Tax Payables');
+      if(/deferred.*rent|unearned.*rent|deferred.*income|unearned.*income/i.test(name))return SFP('CL','Deferred Revenue');
+      if(/loan|borrowing|bank.*facilit/i.test(name))return SFP('CL','Short-term Borrowings');
+      if(/long.*term.*loan|non.*current.*loan/i.test(name))return SFP('NCL','Long-term Borrowings');
+      if(/partner|shareholder.*loan/i.test(name))return SFP('CL','Partner / Shareholder Accounts');
+      return SFP('CL','Other Current Liabilities');
+    }
+    if(/^equity$/i.test(tbType)){
+      if(/share.*capital|paid.*up|issued.*capital|subscribed/i.test(name))return SFP('E','Share Capital');
+      if(/retained|accumulated.*profit|accumulated.*loss|accum.*p.*l/i.test(name))return SFP('E','Retained Earnings');
+      if(/reserve/i.test(name))return SFP('E','Other Reserves');
+      if(/partner.*capital|drawing|owner/i.test(name))return SFP('E','Partner / Shareholder Accounts');
+      return SFP('E','Retained Earnings');
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── GLOBAL NAME-PRIORITY PRE-CHECKS ──────────────────────────────────────
   // Run BEFORE code-based routing so accounts with non-standard codes
@@ -1618,9 +2079,11 @@ function gen(){
       var stmts=buildStmts(tb.accounts,finalMaps);
       APP.stmts=stmts;
 
-      // PY: straight smartMap of prior year accounts (no overrides)
+      // PY: use template-built stmts if available, otherwise build from TB accounts
       var stmtsPY=null;
-      if(APP.tbPrior&&APP.tbPrior.accounts.length){
+      if(APP.stmtsPrior){
+        stmtsPY=APP.stmtsPrior; // already built precisely from template SFP/IS sheets
+      } else if(APP.tbPrior&&APP.tbPrior.accounts.length){
         stmtsPY=buildStmts(APP.tbPrior.accounts,APP.mappingsPrior);
         APP.stmtsPrior=stmtsPY;
       }
@@ -2105,39 +2568,156 @@ function exTB(wb){
 // ═══════════════════════════════════════════════
 function rNotes(stmts,ctx,py){
   var sfp=stmts.sfp,is=stmts.is,r=ctx.r;
+  var pySfp=py&&py.sfp,pyIs=py&&py.is;
+  var hasPY=!!py;
+  var cyLbl=ctx.cu+(ctx.pe?'<br><small style="font-weight:400;font-size:9px">'+pEnd(ctx.pe)+'</small>':'');
+  var pyLbl=hasPY?(ctx.cu+(ctx.pyPe?'<br><small style="font-weight:400;font-size:9px">'+pEnd(ctx.pyPe)+'</small>':'')):'';
+
   var h='<div class="wrap"><div class="pg"><div class="pgh"><div class="pgco">'+esc(ctx.co)+'</div><div class="pgt"><h2>Notes to the Financial Statements</h2><p>For the period ended '+pEnd(ctx.pe)+'</p></div></div><div class="hrl"></div><div class="nb">';
-  h+='<div class="nc"><h4>1.  Basis of Preparation and Significant Accounting Policies</h4><p>These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB). They are presented in '+ctx.cu+', the functional and presentation currency, and prepared on the historical cost basis unless stated otherwise.</p><ul><li><strong>Revenue (IFRS 15):</strong> Recognised when control of goods or services is transferred to the customer at the transaction price.</li><li><strong>Property, plant and equipment (IAS 16):</strong> Carried at cost less accumulated depreciation and impairment. Depreciation charged on straight-line basis over useful lives.</li><li><strong>Financial instruments (IFRS 9):</strong> Trade receivables and payables measured at amortised cost.</li><li><strong>Inventories (IAS 2):</strong> Valued at lower of cost (weighted average) and net realisable value.</li><li><strong>Leases (IFRS 16):</strong> Right-of-use assets and lease liabilities recognised for leases exceeding 12 months.</li><li><strong>Employee benefits (IAS 19):</strong> End-of-service benefits accrued in accordance with local labour law and actuarial estimates where applicable.</li></ul></div>';
+
+  // ── Note 1: Accounting Policies ─────────────────────────────────────────
+  h+='<div class="nc"><h4>1.  Basis of Preparation and Significant Accounting Policies</h4>';
+  h+='<p>These financial statements have been prepared in accordance with International Financial Reporting Standards (IFRS) as issued by the International Accounting Standards Board (IASB). They are presented in '+ctx.cu+', the functional and presentation currency, and prepared on the historical cost basis unless stated otherwise.</p>';
+  if(hasPY)h+='<p style="margin-top:6px;font-size:12px;color:var(--tx2)">Comparative figures for '+pEnd(ctx.pyPe)+' have been restated where necessary to conform to current year presentation.</p>';
+  h+='<ul><li><strong>Revenue (IFRS 15):</strong> Recognised when control of goods or services is transferred to the customer at the transaction price.</li><li><strong>Property, plant and equipment (IAS 16):</strong> Carried at cost less accumulated depreciation and impairment. Depreciation charged on straight-line basis over useful lives.</li><li><strong>Financial instruments (IFRS 9):</strong> Trade receivables and payables measured at amortised cost. Expected credit losses assessed at each reporting date.</li><li><strong>Inventories (IAS 2):</strong> Valued at lower of cost (weighted average) and net realisable value.</li><li><strong>Leases (IFRS 16):</strong> Right-of-use assets and lease liabilities recognised for leases exceeding 12 months.</li><li><strong>Employee benefits (IAS 19):</strong> End-of-service benefits accrued in accordance with local labour law and actuarial estimates where applicable.</li></ul></div>';
 
   var nn=2;
-  function ntbl(cols,rows,tot){return'<table class="nt"><tr>'+cols.map(function(c){return'<th>'+c+'</th>';}).join('')+'</tr>'+rows.map(function(r){return'<tr>'+r.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr>';}).join('')+'<tr class="ntt">'+tot.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr></table>';}
 
+  // ── ntbl helper: single or dual (CY+PY) column note table ────────────────
+  function ntbl(cols,rows,tot){
+    return'<table class="nt"><tr>'+cols.map(function(c){return'<th>'+c+'</th>';}).join('')+'</tr>'+
+      rows.map(function(row){return'<tr>'+row.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr>';}).join('')+
+      '<tr class="ntt">'+tot.map(function(c,i){return'<td'+(i===0?'':' class="num"')+'>'+c+'</td>';}).join('')+'</tr></table>';
+  }
+
+  // Sum a line-item array from a section (absolute value helper)
+  function sumAcc(accs,neg){return (accs||[]).reduce(function(s,a){return s+(neg?-a.net:a.net);},0);}
+
+  // Get PY total for a section+lineItem
+  function pySum(pySec,lineItem,neg){
+    if(!pySec||!pySec[lineItem])return null;
+    return sumAcc(pySec[lineItem],neg);
+  }
+
+  // Build rows for a note: merge CY accounts with PY totals by name
+  function mergeRows(cyAccs,pyAccs,neg){
+    var rows=[],pyMap={};
+    (pyAccs||[]).forEach(function(a){pyMap[normName(a.name)]=neg?-a.net:a.net;});
+    cyAccs.forEach(function(a){
+      var cv=neg?-a.net:a.net;
+      var pv=pyMap[normName(a.name)];
+      rows.push([esc(a.name), fmt(cv,r), hasPY?(pv!==undefined?fmt(pv,r):'<span class="nil">—</span>'):'']);
+    });
+    // PY-only accounts not in CY
+    if(hasPY){
+      var cyNames={};cyAccs.forEach(function(a){cyNames[normName(a.name)]=1;});
+      (pyAccs||[]).forEach(function(a){
+        if(!cyNames[normName(a.name)]){
+          var pv=neg?-a.net:a.net;
+          rows.push(['<span style="color:var(--tx3)">'+esc(a.name)+'</span>','<span class="nil">—</span>',fmt(pv,r)]);
+        }
+      });
+    }
+    return rows;
+  }
+
+  // ── PPE Note ────────────────────────────────────────────────────────────
   var ppe=sfp.NCA['Property, Plant and Equipment']||[];
-  if(ppe.length){var gross=ppe.filter(function(a){return a.net>0;}),dep=ppe.filter(function(a){return a.net<0;});var gT=gross.reduce(function(s,a){return s+a.net;},0),dT=dep.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  Property, Plant and Equipment</h4>'+ntbl(['Asset Category','Gross Cost<br>'+ctx.cu,'Accum. Dep.<br>'+ctx.cu,'Net Book Value<br>'+ctx.cu],gross.map(function(a){return[esc(a.name),fmt(a.net,r),'—',fmt(a.net,r)];}).concat(dep.map(function(a){return['<span style="color:var(--rd)">'+esc(a.name)+'</span>','—',fmt(-a.net,r),'—'];})),['Total',fmt(gT,r),fmt(-dT,r),fmt(gT+dT,r)])+'<p style="margin-top:7px;font-size:11.5px;color:var(--tx3);font-style:italic">Depreciation is charged on a straight-line basis over the estimated useful lives of the assets.</p></div>';}
+  if(ppe.length){
+    var gross=ppe.filter(function(a){return a.net>0;}),dep=ppe.filter(function(a){return a.net<0;});
+    var gT=gross.reduce(function(s,a){return s+a.net;},0),dT=dep.reduce(function(s,a){return s+a.net;},0);
+    var pyPpe=pySfp&&pySfp.NCA&&pySfp.NCA['Property, Plant and Equipment']||[];
+    var pyGross=pyPpe.filter(function(a){return a.net>0;}),pyDep=pyPpe.filter(function(a){return a.net<0;});
+    var pyGT=pyGross.reduce(function(s,a){return s+a.net;},0),pyDT=pyDep.reduce(function(s,a){return s+a.net;},0);
+    var ppeHdr=hasPY?['Asset Category','Gross Cost<br>'+cyLbl,'Accum. Dep.<br>'+cyLbl,'NBV<br>'+cyLbl,'Gross Cost<br>'+pyLbl,'Accum. Dep.<br>'+pyLbl,'NBV<br>'+pyLbl]:['Asset Category','Gross Cost<br>'+ctx.cu,'Accum. Dep.<br>'+ctx.cu,'Net Book Value<br>'+ctx.cu];
+    var ppeRows=gross.map(function(a){
+      var pyA=pyGross.find(function(p){return normName(p.name)===normName(a.name);})||{net:0};
+      return hasPY?[esc(a.name),fmt(a.net,r),'—',fmt(a.net,r),fmt(pyA.net,r),'—',fmt(pyA.net,r)]:[esc(a.name),fmt(a.net,r),'—',fmt(a.net,r)];
+    }).concat(dep.map(function(a){
+      var pyA=pyDep.find(function(p){return normName(p.name)===normName(a.name);})||{net:0};
+      return hasPY?['<span style="color:var(--rd)">'+esc(a.name)+'</span>','—',fmt(-a.net,r),'—','—',fmt(-pyA.net,r),'—']:['<span style="color:var(--rd)">'+esc(a.name)+'</span>','—',fmt(-a.net,r),'—'];
+    }));
+    var ppeTot=hasPY?['Total',fmt(gT,r),fmt(-dT,r),fmt(gT+dT,r),fmt(pyGT,r),fmt(-pyDT,r),fmt(pyGT+pyDT,r)]:['Total',fmt(gT,r),fmt(-dT,r),fmt(gT+dT,r)];
+    h+='<div class="nc"><h4>'+nn+++'.  Property, Plant and Equipment</h4>'+ntbl(ppeHdr,ppeRows,ppeTot)+'<p style="margin-top:7px;font-size:11.5px;color:var(--tx3);font-style:italic">Depreciation is charged on a straight-line basis over the estimated useful lives of the assets.</p></div>';
+  }
 
-  function noteCA(li,title){var accs=sfp.CA[li]||[];if(!accs.length)return;var t=accs.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  '+title+'</h4>'+ntbl(['Description',ctx.cu],accs.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
-  noteCA('Trade and Other Receivables','Trade and Other Receivables');
-  noteCA('Inventories','Inventories');
-  noteCA('Cash and Cash Equivalents','Cash and Cash Equivalents');
-  noteCA('Prepayments and Deposits','Prepayments and Deposits');
-  noteCA('VAT and Tax Receivables','VAT and Tax Receivables');
+  // ── Generic note builder (CA, CL, NCL, IS sections) ─────────────────────
+  function noteSection(cyAccs,pyAccs,title,neg){
+    if(!cyAccs||!cyAccs.length)return;
+    var cyT=sumAcc(cyAccs,neg);
+    var pyT=hasPY&&pyAccs?sumAcc(pyAccs,neg):null;
+    var cols=hasPY?['Description',cyLbl,pyLbl]:['Description',ctx.cu];
+    var rows=mergeRows(cyAccs,pyAccs,neg).map(function(row){return hasPY?[row[0],row[1],row[2]]:[row[0],row[1]];});
+    var tot=hasPY?['Total',fmt(cyT,r),pyT!==null?fmt(pyT,r):'—']:['Total',fmt(cyT,r)];
+    h+='<div class="nc"><h4>'+nn+++'.  '+title+'</h4>'+ntbl(cols,rows,tot)+'</div>';
+  }
 
-  function noteCL(li,title,neg){var accs=sfp.CL[li]||[];if(!accs.length)return;var t=accs.reduce(function(s,a){return s+(neg?-a.net:a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  '+title+'</h4>'+ntbl(['Description',ctx.cu],accs.map(function(a){return[esc(a.name),fmt(neg?-a.net:a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  // ── Share Capital & Equity Notes ─────────────────────────────────────────
+  var sc=sfp.E&&sfp.E['Share Capital']||[];
+  var re=sfp.E&&sfp.E['Retained Earnings']||[];
+  var pySc=pySfp&&pySfp.E&&pySfp.E['Share Capital']||[];
+  var pyRe=pySfp&&pySfp.E&&pySfp.E['Retained Earnings']||[];
+  if(sc.length)noteSection(sc,pySc,'Share Capital',true);
+  if(re.length)noteSection(re,pyRe,'Retained Earnings / Accumulated Profit or Loss',true);
+
+  // Other Reserves
+  var ores=sfp.E&&sfp.E['Other Reserves']||[];
+  var pyOres=pySfp&&pySfp.E&&pySfp.E['Other Reserves']||[];
+  if(ores.length)noteSection(ores,pyOres,'Other Reserves',true);
+
+  // Partner/Shareholder Equity
+  var psa=sfp.E&&sfp.E['Partner / Shareholder Accounts']||[];
+  var pyPsa=pySfp&&pySfp.E&&pySfp.E['Partner / Shareholder Accounts']||[];
+  if(psa.length)noteSection(psa,pyPsa,'Partner / Shareholder Accounts (Equity)',true);
+
+  // ── Balance Sheet CA Notes ───────────────────────────────────────────────
+  ['Trade and Other Receivables','Inventories','Cash and Cash Equivalents','Prepayments and Deposits','VAT and Tax Receivables','Employee and Staff Advances','Other Current Assets'].forEach(function(li){
+    noteSection(sfp.CA[li],pySfp&&pySfp.CA&&pySfp.CA[li],li,false);
+  });
+
+  // NCA notes (other than PPE)
+  ['Capital Work in Progress','Intangible Assets','Right-of-Use Assets','Long-term Investments','Long-term Receivables','Investment Property','Deferred Tax Asset','Other Non-Current Assets'].forEach(function(li){
+    noteSection(sfp.NCA[li],pySfp&&pySfp.NCA&&pySfp.NCA[li],li,false);
+  });
+
+  // ── Balance Sheet CL Notes ───────────────────────────────────────────────
   var tpAll=[].concat(sfp.CL['Trade and Other Payables']||[]).concat(sfp.CL['Accrued Liabilities']||[]);
-  if(tpAll.length){var t=tpAll.reduce(function(s,a){return s+(-a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  Trade and Other Payables</h4>'+ntbl(['Description',ctx.cu],tpAll.map(function(a){return[esc(a.name),fmt(-a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
-  noteCL('VAT and Tax Payables','VAT and Tax Payables',true);
-  noteCL('Short-term Borrowings','Short-term Borrowings',true);
-  noteCL('Partner / Shareholder Accounts','Partner / Shareholder Accounts',true);
+  var pyTpAll=hasPY?[].concat((pySfp&&pySfp.CL&&pySfp.CL['Trade and Other Payables'])||[]).concat((pySfp&&pySfp.CL&&pySfp.CL['Accrued Liabilities'])||[]):[];
+  if(tpAll.length)noteSection(tpAll,pyTpAll,'Trade and Other Payables',true);
+  ['VAT and Tax Payables','Short-term Borrowings','Partner / Shareholder Accounts','Customer Advances','Deferred Revenue','Other Current Liabilities'].forEach(function(li){
+    noteSection(sfp.CL[li],pySfp&&pySfp.CL&&pySfp.CL[li],li,true);
+  });
 
-  // NCL
-  Object.entries(sfp.NCL||{}).forEach(function(e){if(!(sfp.NCL[e[0]]||[]).length)return;var t=e[1].reduce(function(s,a){return s+(-a.net);},0);h+='<div class="nc"><h4>'+nn+++'.  '+esc(e[0])+'</h4>'+ntbl(['Description',ctx.cu],e[1].map(function(a){return[esc(a.name),fmt(-a.net,r)];}),['Total',fmt(t,r)])+'</div>';});
+  // ── NCL Notes ───────────────────────────────────────────────────────────
+  Object.keys(sfp.NCL||{}).forEach(function(li){
+    noteSection(sfp.NCL[li],pySfp&&pySfp.NCL&&pySfp.NCL[li],li,true);
+  });
 
-  // Admin breakdown
-  var allAdm=[];Object.values(is.ADMIN||{}).forEach(function(v){allAdm=allAdm.concat(v);});
-  if(allAdm.length>1){var t=allAdm.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  General and Administrative Expenses</h4>'+ntbl(['Description',ctx.cu],allAdm.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  // ── Income Statement Breakdowns ──────────────────────────────────────────
+  // Revenue
+  var allRev=[];Object.values(is.REV||{}).forEach(function(v){allRev=allRev.concat(v);});
+  var pyAllRev=[];if(pyIs)Object.values(pyIs.REV||{}).forEach(function(v){pyAllRev=pyAllRev.concat(v);});
+  if(allRev.length>0)noteSection(allRev,pyAllRev,'Revenue',true);
 
-  // COS breakdown
+  // Cost of Revenue
   var allCos=[];Object.values(is.COS||{}).forEach(function(v){allCos=allCos.concat(v);});
-  if(allCos.length>1){var t=allCos.reduce(function(s,a){return s+a.net;},0);h+='<div class="nc"><h4>'+nn+++'.  Cost of Revenue</h4>'+ntbl(['Description',ctx.cu],allCos.map(function(a){return[esc(a.name),fmt(a.net,r)];}),['Total',fmt(t,r)])+'</div>';}
+  var pyAllCos=[];if(pyIs)Object.values(pyIs.COS||{}).forEach(function(v){pyAllCos=pyAllCos.concat(v);});
+  if(allCos.length>1)noteSection(allCos,pyAllCos,'Cost of Revenue',false);
+
+  // Admin Expenses
+  var allAdm=[];Object.values(is.ADMIN||{}).forEach(function(v){allAdm=allAdm.concat(v);});
+  var pyAllAdm=[];if(pyIs)Object.values(pyIs.ADMIN||{}).forEach(function(v){pyAllAdm=pyAllAdm.concat(v);});
+  if(allAdm.length>1)noteSection(allAdm,pyAllAdm,'General and Administrative Expenses',false);
+
+  // Distribution
+  var allDist=[];Object.values(is.DIST||{}).forEach(function(v){allDist=allDist.concat(v);});
+  var pyAllDist=[];if(pyIs)Object.values(pyIs.DIST||{}).forEach(function(v){pyAllDist=pyAllDist.concat(v);});
+  if(allDist.length>1)noteSection(allDist,pyAllDist,'Distribution and Selling Expenses',false);
+
+  // Finance Costs
+  var allFc=[];Object.values(is.FC||{}).forEach(function(v){allFc=allFc.concat(v);});
+  var pyAllFc=[];if(pyIs)Object.values(pyIs.FC||{}).forEach(function(v){pyAllFc=pyAllFc.concat(v);});
+  if(allFc.length)noteSection(allFc,pyAllFc,'Finance Costs',false);
 
   h+='</div></div></div>';return h;
 }
